@@ -8,7 +8,7 @@ import os
 import json
 import sys
 import getpass
-
+import signal
 
 current_dir=os.getcwd()
 os.chdir(current_dir) #le path change automatiquement                    
@@ -60,13 +60,19 @@ def login():
         print("Invalid username or password! you redirect to home")
 
 def register_client():
-    while True:
+    continuer=True
+    while continuer:
         username = raw_input("New username: ")
         if not len(username) > 0:
             print("Username can't be blank")
             continue
         else:
-            break
+            s.send(username)
+            verify=s.recv(BUFFER_SIZE)
+            if verify=="true":
+                continuer=False
+            else:
+                print("Username already in use. Please try again.")
     while True:
         password = getpass.getpass("Password : ")
         password2 = getpass.getpass("Re-enter password : ")
@@ -218,7 +224,6 @@ def session(username):
                         time.sleep(1)
                         terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
                     sending(title)
-
                 elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
                     commande=raw_input("Please enter your filename : ")
                     data="libreoffice " + commande + "*"
@@ -288,19 +293,18 @@ BUFFER_SIZE = 1024
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 while 1:
-	print("Welcome to the system. Please register or login.")
-	print("Options: register | login | exit")
-	while True:
-	    option =raw_input("> ")
-	    if option == "login":
-	        login()
-	    elif option == "register":
-	        register_client()
-	    elif option == "exit":
-	        break
-	    else:
-	        print(option + " is not an option")
-
+    print("Welcome to the system. Please register or login.")
+    print("Options: register | login | exit")
+    while True:
+        option =raw_input("> ")
+        if option == "login":
+            login()
+        elif option == "register":
+            register_client()
+        elif option == "exit":
+            break
+        else:
+            print(option + " is not an option")
 
 s.close()
 print("received data")

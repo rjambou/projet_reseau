@@ -117,6 +117,23 @@ class ClientThread(Thread):
 
     def run(self):
         while True:
+            username=conn.recv(1024)
+            print username
+            if verify(username):
+                valid="true"
+            else:
+                valid="false"
+            conn.send(valid)
+            if valid=="false":
+                while True:
+                    username=conn.recv(1024)
+                    if verify(username):
+                        valid="true"
+                    else:
+                        valid="false"
+                    conn.send(valid)
+                    if valid=="true":
+                        break
             data=conn.recv(1024)
             #if not data: break
             commande = data.split(" ")
