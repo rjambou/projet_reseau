@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*-coding: utf8-*
- 
+import subprocess as sub
+import commands as cmd
 import socket
 import time
 import os
@@ -8,19 +9,24 @@ import json
 import sys
 import getpass
 import graphical_claire
+import accueil
+
+current_dir=os.getcwd()
+os.chdir(current_dir) #le path change automatiquement                    
 
 correct=True
 blank=True
 length=True
 nb=True
 lt=True
+already_register=True
 
 def securite(password):
     if len(password)<8:
         length=False
         nb=True
         lt=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+        auth=graphical_claire.fenetreauth(blank, length, nb, lt,already_register)
         register_client(auth[1], auth[2])
         length=True
         print("Your password is not long enough. (8 caracters min.)")
@@ -37,7 +43,7 @@ def securite(password):
         nb=False
         length=True
         lt=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
         register_client(auth[1], auth[2])
         nb=True
         print("Your password has to contain a number.")
@@ -46,14 +52,12 @@ def securite(password):
         lt=False
         length=True
         nb=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
         register_client(auth[1], auth[2])
         print("Your password has to contain a letter.")
         lt=True
         return False
     return True
-
-
 
 def login(username, password):
     print("Please enter your login")
@@ -65,7 +69,7 @@ def login(username, password):
             length=True
             nb=True
             lt=True
-            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
             login(auth[1], auth[2])
             blank=True
             print("Username can't be blank")
@@ -79,7 +83,7 @@ def login(username, password):
             length=True
             nb=True
             lt=True
-            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
             login(auth[1], auth[2])
             blank=True
             print("Password can't be blank")
@@ -97,7 +101,7 @@ def login(username, password):
         length=True
         nb=True
         lt=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
         login(auth[1], auth[2])
         correct=True
         print("Invalid username or password! you redirect to home")
@@ -107,7 +111,7 @@ def register_client(username, password):
         #username = raw_input("New username: ")
         if not len(username) > 0:
             blank=False
-            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+            auth=graphical_claire.fenetreauth(blank, length, nb, lt, already_register)
             register_client(auth[1], auth[2])
             blank=True
             print("Username can't be blank")
@@ -125,17 +129,28 @@ def register_client(username, password):
             continue
         else:
             break
+    while True:
+        group = raw_input("choice your group (doctor, nurse, secretary) : ")
+        if not len(group) > 0:
+            print("group can't be blank")
+            continue
+        else:
+            break
     print("Creating account...")
-    data="register " + username + " " + password
+    data="register " + username + " " + password + " " + group
     s.send(data)
     time.sleep(1)
     data=s.recv(BUFFER_SIZE)
     if data=="uncreated":
+        already_register=False
         print("Username already use! Please recover your password or contact your administration")
+        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
+        register_client(auth[1], auth[2])
+        already_register=True
         login()
     elif data == "created":
-    	print("User " + username + " created")
-    	login()
+        print("User " + username + " created")
+        login()
 
 #arefaire
 
@@ -150,8 +165,8 @@ def sendmail_client(username):
         time.sleep(1)
         valid=s.recv(BUFFER_SIZE)
         if valid=="false":
-        	print("There is no account with that username")
-        	continue
+            print("There is no account with that username")
+            continue
         else:
             break
     while True:
@@ -175,85 +190,145 @@ def sendmail_client(username):
     print("Mail has been sent to " + recipient)
 
 
+def shell(data):                            #Attention commande cd
+    a=sub.check_output(data, shell=True)
+    if (a==''):
+        a='commande reussie'
+    return a
+
+def sending(file):
+    f=open(file,"rb")
+    l = f.read(1024)
+    while (l):
+        print 'Sending...'
+        s.send(l)
+        l = f.read(1024)
+    f.close()
+    print "Done Sending"
+
+def receiving(file):
+    try:
+        f=open(file,"w")
+    except IOError :
+        sub.call("touch " + file, shell=True )
+    finally:
+        l = s.recv(1024)
+        while(l):
+            print "receiving"
+            f.write(l)
+            l=s.recv(BUFFER_SIZE)
+        f.close()
 
 
 def session(username):
+    current_dir=os.getcwd()
+    os.chdir(current_dir) #le path change automatiquement                        
     data="session " + username
     s.send(data)
     time.sleep(1)
     print("Welcome to your account " + username)
-    print("Options: view mail | send mail | commande shell | logout")
     message_session=s.recv(BUFFER_SIZE)
     print(message_session)
     while True:
+        print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
+        if message_session.split(" ")[1] == "admin":
+            print("options user mail | delete mail | delete account")
         option = raw_input(username + " > ")
+        s.send(option)
+        time.sleep(1)
         if option == "logout":
-        	s.send(option)
-        	time.sleep(1)
-        	print("Logging out...")
-        	break
+            print("Logging out...")
+            break
         elif option == "view mail":
             print("Current mail:")
-            s.send(option)
-            time.sleep(1)
             nombre_mail=s.recv(BUFFER_SIZE)
             for i in range(int(nombre_mail)):
                 mail=s.recv(BUFFER_SIZE)
                 print(mail)
         elif option == "send mail":
-        	s.send(option)
-        	time.sleep(1)
-        	sendmail_client(username)
+            sendmail_client(username)
         elif option == "commande shell":
-        	s.send(option)
-        	time.sleep(1)
-        	commande=raw_input("Please enter your commande ! ")
-        	s.send(commande)
-        	time.sleep(1)
-        	resultats=s.recv(BUFFER_SIZE)
-        	print(resultats)
-        # elif users[username]["group"] == "admin":
-        #     if option == "user mail":
-        #         print("Whos mail would you like to see?")
-        #         userinfo = raw_input("> ")
-        #         if userinfo in users:
-        #             for mail in users[userinfo]["mail"]:
-        #                 print(mail)
-        #         else:
-        #             print("There is no account with that username")
-        #     elif option == "delete mail":
-        #         print("Whos mail would you like to delete?")
-        #         userinfo = raw_input("> ")
-        #         if userinfo in users:
-        #             print("Deleting " + userinfo + "'s mail...")
-        #             users[userinfo]["mail"] = []
-        #             time.sleep(1)
-        #             print(userinfo + "'s mail has been deleted")
-        #         else:
-        #             print("There is no account with that username")
-        #     elif option == "delete account":
-        #         print("Whos account would you like to delete?")
-        #         userinfo = raw_input("> ")
-        #         if userinfo in users:
-        #             print("Are you sure you want to delete " + userinfo + "'s account?")
-        #             print("Options: yes | no")
-        #             while True:
-        #                 confirm = raw_input("> ")
-        #                 if confirm == "yes":
-        #                     print("Deleting " + userinfo + "'s account...")
-        #                     del users[userinfo]
-        #                     time.sleep(1)
-        #                     print(userinfo + "'s account has been deleted")
-        #                     break
-        #                 elif confirm == "no":
-        #                     print("Canceling account deletion...")
-        #                     time.sleep(1)
-        #                     print("Account deletion canceled")
-        #                     break
-        #                 else:
-        #                     print(confirm + " is not an option")
-        #         else:
-        #             print("There is no account with that username")
+            commande=raw_input("Please enter your commande ! ")
+            s.send(commande)
+            time.sleep(1)
+            resultats=s.recv(BUFFER_SIZE)
+            print(resultats)
+        elif option == "gestion de fichier":
+            while True:
+                print("Options: creer un rapport | lire un rapport | retour")
+                option_fichier=raw_input(username + " > ")
+                s.send(option_fichier)
+                time.sleep(1)
+                if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
+                    title=raw_input("Enter your title of file : ")
+                    title=title+".odt"
+                    s.send(title)
+                    fichier=open(title,'w')
+                    fichier.close()
+                    data="libreoffice " + title
+                    data=shell(data)
+                    terminer=raw_input("Avez vous terminez ?(oui ou non)")
+                    while terminer!="oui":
+                        time.sleep(1)
+                    sending(title)
+
+                elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
+                    commande=raw_input("Please enter your filename : ")
+                    data="libreoffice " + commande + "*"
+                    data=sub.call(data, shell=True)
+                elif option_fichier=="retour":
+                    break
+
+        elif message_session.split(" ")[1] == "admin":
+            if option == "user mail":
+                print("Whos mail would you like to see?")
+                userinfo = raw_input("> ")
+                s.send(userinfo)
+                time.sleep(1)
+                info=s.recv(BUFFER_SIZE)
+                if info=="true":
+                    nombre_mail=s.recv(BUFFER_SIZE)
+                    for i in range(int(nombre_mail)):
+                        mail=s.recv(BUFFER_SIZE)
+                        print(mail)
+                else:
+                    print("There is no account with that username")
+                time.sleep(1)
+           
+            elif option == "delete mail":
+                print("Whos mail would you like to delete?")
+                userinfo = raw_input("> ")
+                s.send(userinfo)
+                time.sleep(1)
+                info=s.recv(BUFFER_SIZE)
+                if info=="true":
+                    print("Deleting " + userinfo + "'s mail...")
+                    time.sleep(1)
+                    print(userinfo + "'s mail has been deleted")
+                else:
+                    print("There is no account with that username")
+                time.sleep(1)
+
+            elif option == "delete account":
+                print("Whos account would you like to delete?")
+                userinfo = raw_input("> ")
+                s.send(userinfo)
+                time.sleep(1)
+                info=s.recv(BUFFER_SIZE)
+                if info=="true":
+                    print("Are you sure you want to delete " + userinfo + "'s account?")
+                    print("Options: yes | no")
+                    while True:
+                        confirm=raw_input(" > ")
+                        s.send(confirm)
+                        time.sleep(1)
+                        response=s.recv(BUFFER_SIZE)
+                        print(response)
+                        break
+                else:
+                    print("There is no account with that username")
+                time.sleep(1)
+
         else:
             print(option + " is not an option")
 
@@ -266,12 +341,13 @@ BUFFER_SIZE = 1024
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 while 1:
-    auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt)
+    accueil.accueil()
+
+
     option=auth[0]
     print("Welcome to the system. Please register or login.")
     print("Options: register | login | exit")
     while True:
-    # option =raw_input("> ")
         if option == "login":
             login(auth[1], auth[2])
         elif option == "register":
@@ -280,6 +356,7 @@ while 1:
             break
         else:
             print(option + " is not an option")
+
 
 s.close()
 print("received data")

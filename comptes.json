@@ -1,0 +1,37 @@
+{
+  "remou": {
+    "mail": [], 
+    "password": "abcd", 
+    "group": "user"
+  }, 
+  "toto": {
+    "mail": [], 
+    "password": "tata", 
+    "group": "user"
+  }, 
+  "david": {
+    "mail": [], 
+    "password": "caca", 
+    "group": "user"
+  }, 
+  "claire": {
+    "mail": [], 
+    "password": "rrrrrrr3", 
+    "group": "user"
+  }, 
+  "jean": {
+    "mail": [], 
+    "password": "azert", 
+    "group": "user"
+  }, 
+  "john": {
+    "mail": [], 
+    "password": "bite", 
+    "group": "user"
+  }, 
+  "root": {
+    "mail": [], 
+    "password": "gucci-mane", 
+    "group": "admin"
+  }
+}
