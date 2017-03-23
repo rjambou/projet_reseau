@@ -34,3 +34,5 @@ def accueil():
 	bouton_valider.place(x=500, y=100)
 
 	fenetre.mainloop()
+	fenetre.destroy
+	return option

@@ -10,6 +10,7 @@ import sys
 import getpass
 import graphical_claire
 import accueil
+import interface_reseau
 
 current_dir=os.getcwd()
 os.chdir(current_dir) #le path change automatiquement                    
@@ -20,14 +21,16 @@ length=True
 nb=True
 lt=True
 already_register=True
+pwd=True
+gr=True
 
 def securite(password):
     if len(password)<8:
         length=False
         nb=True
         lt=True
-        auth=graphical_claire.fenetreauth(blank, length, nb, lt,already_register)
-        register_client(auth[1], auth[2])
+        save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+        register_client(save[1], save[2], save[3], save [4])
         length=True
         print("Your password is not long enough. (8 caracters min.)")
         return False 
@@ -43,8 +46,8 @@ def securite(password):
         nb=False
         length=True
         lt=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
-        register_client(auth[1], auth[2])
+        save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+        register_client(save[1], save[2], save[3], save [4])
         nb=True
         print("Your password has to contain a number.")
         return False
@@ -52,8 +55,8 @@ def securite(password):
         lt=False
         length=True
         nb=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
-        register_client(auth[1], auth[2])
+        save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+        register_client(save[1], save[2], save[3], save [4])
         print("Your password has to contain a letter.")
         lt=True
         return False
@@ -64,28 +67,20 @@ def login(username, password):
     while True:
         #username = raw_input("Username: ")
         if not len(username) > 0:
-            blank=False
-            correct=True
-            length=True
-            nb=True
-            lt=True
-            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
+            correct=False
+            auth=graphical_claire.fenetreauth(correct)
             login(auth[1], auth[2])
-            blank=True
+            correct=True
             print("Username can't be blank")
         else:
             break
     while True:
         #password = getpass.getpass("Password : ")
         if not len(password) > 0:
-            blank=False
-            correct=True
-            length=True
-            nb=True
-            lt=True
-            auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
+            correct=False
+            auth=graphical_claire.fenetreauth(correct)
             login(auth[1], auth[2])
-            blank=True
+            correct=True
             print("Password can't be blank")
         else:
             break
@@ -94,25 +89,22 @@ def login(username, password):
     time.sleep(1)
     data=s.recv(BUFFER_SIZE)
     if data=="true":
+        interface_reseau.interface()
         return session(username)
     elif data == "false":
         correct=False
-        blank=True
-        length=True
-        nb=True
-        lt=True
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
+        auth=graphical_claire.fenetreauth(correct)
         login(auth[1], auth[2])
         correct=True
         print("Invalid username or password! you redirect to home")
 
-def register_client(username, password, group):
+def register_client(username, password, password2, group):
     while True:
         #username = raw_input("New username: ")
         if not len(username) > 0:
             blank=False
-            auth=graphical_claire.fenetreauth(blank, length, nb, lt, already_register)
-            register_client(auth[1], auth[2])
+            save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+            register_client(save[1], save[2], save[3], save [4])
             blank=True
             print("Username can't be blank")
             continue
@@ -121,9 +113,13 @@ def register_client(username, password, group):
     while True:
         #password = getpass.getpass("Password : ")
         #password2 = getpass.getpass("Re-enter password : ")
-        #if password!=password2 :
-        #    print("Passwords don't match.\nPlease try again.\n")
-        #    continue
+        if password!=password2 :
+            pwd=False
+            print("Passwords don't match.\nPlease try again.\n")
+            save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+            register_client(save[1], save[2], save[3], save [4])
+            pwd=True
+            continue
         if not securite(password):
             print("Please try again.\n")
             continue
@@ -133,6 +129,10 @@ def register_client(username, password, group):
         #group = raw_input("choice your group (doctor, nurse, secretary) : ")
         if not len(group) > 0:
             print("group can't be blank")
+            gr=False
+            save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+            register_client(save[1], save[2], save[3], save [4])
+            gr=True
             continue
         else:
             break
@@ -144,13 +144,13 @@ def register_client(username, password, group):
     if data=="uncreated":
         already_register=False
         print("Username already use! Please recover your password or contact your administration")
-        auth=graphical_claire.fenetreauth(correct, blank, length, nb, lt, already_register)
-        register_client(auth[1], auth[2])
+        save=graphical_claire.fenetresave(blank, length, nb, lt, already_register, pwd, gr)
+        register_client(save[1], save[2], save[3], save [4])
         already_register=True
         login()
     elif data == "created":
         print("User " + username + " created")
-        login()
+        login(username, password)
 
 #arefaire
 
@@ -350,8 +350,8 @@ while 1:
             auth=graphical_claire.fenetreauth(True)
             login(auth[1], auth[2])
         elif option == "register":
-            save=graphical_claire.fenetresave(True, True, True, True, True)
-            register_client(save[1], save[2], save[3])
+            save=graphical_claire.fenetresave(True, True, True, True, True, True, True)
+            register_client(save[1], save[2], save[3], save [4])
         elif option == "exit":
             break
         else:
