@@ -4,6 +4,7 @@
 from Tkinter import *
 import graphical_claire
 
+option=""
 def accueil():
 	fenetre=Tk()		#création fenetre
 	fenetre.geometry("800x600+300+0")
@@ -13,12 +14,14 @@ def accueil():
 	champ_label.pack()
 
 	def connexion():
-		graphical_claire.fenetreauth(True)
-		return 0
+		global option
+		option="login"
+		return option
 
 	def enregistrement():
-		graphical_claire.fenetresave(True, True, True, True, True)
-		return 0
+		global option
+		option="register"
+		return option
 
 #bouton "Se connecter"
 	bouton_valider=Button(fenetre, text="Se connecter", command=connexion, font=16)
@@ -31,7 +34,3 @@ def accueil():
 	bouton_valider.place(x=500, y=100)
 
 	fenetre.mainloop()
-
-	return 0
-
-print accueil()

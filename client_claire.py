@@ -106,7 +106,7 @@ def login(username, password):
         correct=True
         print("Invalid username or password! you redirect to home")
 
-def register_client(username, password):
+def register_client(username, password, group):
     while True:
         #username = raw_input("New username: ")
         if not len(username) > 0:
@@ -130,7 +130,7 @@ def register_client(username, password):
         else:
             break
     while True:
-        group = raw_input("choice your group (doctor, nurse, secretary) : ")
+        #group = raw_input("choice your group (doctor, nurse, secretary) : ")
         if not len(group) > 0:
             print("group can't be blank")
             continue
@@ -341,17 +341,17 @@ BUFFER_SIZE = 1024
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 while 1:
-    accueil.accueil()
-
-
-    option=auth[0]
+    option=accueil.accueil()
     print("Welcome to the system. Please register or login.")
     print("Options: register | login | exit")
+    print option
     while True:
         if option == "login":
+            auth=graphical_claire.fenetreauth(True)
             login(auth[1], auth[2])
         elif option == "register":
-            register_client(auth[1], auth[2])
+            save=graphical_claire.fenetresave(True, True, True, True, True)
+            register_client(save[1], save[2], save[3])
         elif option == "exit":
             break
         else:

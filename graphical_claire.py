@@ -34,7 +34,7 @@ def fenetreauth(correct):
 	champ_label.pack()		#affiche le label ds la fenetre
 
 	#Login
-	Login= Label(fenetre, text="Login", fg="black", font=("Login", 12), bg="white", anchor="center")
+	Login= Label(fenetre, text="Login", fg="black", font=("Login", 14), bg="white", anchor="center")
 	Login.pack()
 	Login.place(x=0, y=30)
 
@@ -44,7 +44,7 @@ def fenetreauth(correct):
 	Login_texte.place(x=0, y=60)
 
 	#Mot de passe
-	Mdp = Label(fenetre, text="Mot de passe", fg="black", font=("mdp", 12), bg="white", anchor="center")
+	Mdp = Label(fenetre, text="Mot de passe", fg="black", font=("mdp", 14), bg="white", anchor="center")
 	Mdp.pack()
 	Mdp.place(x=0, y=90)
 
@@ -92,12 +92,12 @@ def fenetresave(blank, length, nb, lt, already_register):
 	fenetre2=Tk()		#création fenetre
 	fenetre2.geometry("800x600+300+0")
 
-	champ_label = Label(fenetre2, text="enregistrement", fg="black", font=("Bonjour", 16), bg="white", anchor="center")
+	champ_label = Label(fenetre2, text="Enregistrement", fg="black", font=("Bonjour", 20), bg="white", anchor="center")
 	champ_label.place(x=0, y=0)
 	champ_label.pack()		#affiche le label ds la fenetre
 
 	#Login
-	Login= Label(fenetre2, text="Login", fg="black", font=("Login", 12), bg="white", anchor="center")
+	Login= Label(fenetre2, text="Login", fg="black", font=("Login", 14), bg="white", anchor="center")
 	Login.pack()
 	Login.place(x=0, y=30)
 
@@ -107,7 +107,7 @@ def fenetresave(blank, length, nb, lt, already_register):
 	Login_texte.place(x=0, y=60)
 
 	#Mot de passe
-	Mdp = Label(fenetre2, text="Mot de passe", fg="black", font=("mdp", 12), bg="white", anchor="center")
+	Mdp = Label(fenetre2, text="Mot de passe", fg="black", font=("mdp", 14), bg="white", anchor="center")
 	Mdp.pack()
 	Mdp.place(x=0, y=90)
 
@@ -116,7 +116,7 @@ def fenetresave(blank, length, nb, lt, already_register):
 	Mdp_texte.pack()
 	Mdp_texte.place(x=0, y=120)
 
-	#Mot de passe verificatiob
+	#Mot de passe verification
 	Mdpv = Label(fenetre2, text="Vérification du mot de passe", fg="black", font=("mdp", 12), bg="white", anchor="center")
 	Mdpv.pack()
 	Mdpv.place(x=0, y=160)
@@ -127,16 +127,16 @@ def fenetresave(blank, length, nb, lt, already_register):
 	Mdpv_texte.place(x=0, y=200)
 
 	#Group
-	group = Label(fenetre2, text="group", fg="black", font=("mdp", 12), bg="white", anchor="center")
+	group = Label(fenetre2, text="Group", fg="black", font=("mdp", 14), bg="white", anchor="center")
 	group.pack()
 	group.place(x=0, y=280)
 
 	liste_group=Listbox(fenetre2)
 	liste_group.pack()
 	liste_group.place(x=0, y=300)
-	liste_group.insert(0, "infirmier")
-	liste_group.insert(1, "docteur")
-	liste_group.insert(2, "secrétaire")
+	liste_group.insert(0, "Infirmier")
+	liste_group.insert(1, "Docteur")
+	liste_group.insert(2, "Secrétaire")
 
 	#Register
 	bouton_register=Button(fenetre2, text="Enregistrer", command=enregistrer)
