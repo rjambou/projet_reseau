@@ -85,9 +85,10 @@ def register_client():
         else:
             break
     while True:
-        group = raw_input("choice your group (doctor, nurse, secretary) : ")
-        if not len(group) > 0:
-            print("group can't be blank")
+        liste_groupes=["doctor","nurse","secretary"] #liste des groupes disponibles : l'utilisateur devra réessayer tant qu'il n'entre pas un de ceux-là
+        group = raw_input("choice your group (doctor, nurse, secretary) : ").lower() #avec .lower() la casse n'a pas d'importance
+        if group not in liste_groupes:
+            print("Ce groupe est invalide.")
             continue
         else:
             break
