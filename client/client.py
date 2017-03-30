@@ -40,10 +40,13 @@ def login():
     print("Please enter your login")
     while True:
         username = raw_input("Username: ")
-        if not len(username) > 0:
-            print("Username can't be blank")
-        else:
+        s.send(username)
+        username_exists=s.recv(BUFFER_SIZE)
+        if username_exists=="true":
             break
+        else:
+            print("Invalid username, please try again.")
+            continue
     while True:
         password = getpass.getpass("Password : ")
         if not len(password) > 0:
