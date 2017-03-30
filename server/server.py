@@ -117,23 +117,16 @@ class ClientThread(Thread):
 
     def run(self):
         while True:
-            username=conn.recv(1024)
-            print username
-            if verify(username):
-                valid="true"
-            else:
-                valid="false"
-            conn.send(valid)
-            if valid=="false":
-                while True:
-                    username=conn.recv(1024)
-                    if verify(username):
-                        valid="true"
-                    else:
-                        valid="false"
-                    conn.send(valid)
-                    if valid=="true":
-                        break
+            while True:
+                username=conn.recv(1024)
+                print username
+                if verify(username):
+                    username_exists="true"
+                    conn.send(username_exists)
+                    break
+                else:
+                    username_exists="false"
+                    conn.send(username_exists)
             data=conn.recv(1024)
             #if not data: break
             commande = data.split(" ")
@@ -143,8 +136,10 @@ class ClientThread(Thread):
                 password=commande[2]
                 if loginauth(username, password):
                     data="true"
+                    print("login auth true")
                 else:
                     data="false"
+                    print("login auth false")
             if (commande[0]=="register"):
                 username=commande[1]
                 password=commande[2]
