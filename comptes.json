@@ -1,0 +1,28 @@
+{
+  "remi": {
+    "mail": [], 
+    "password": "remijambou1234", 
+    "group": "secretary"
+  }, 
+  "jean": {
+    "mail": [
+      [
+        "Sender: yanis", 
+        "Subject: coucou", 
+        "Context: salut c'est moi yanis et ceci est un test"
+      ]
+    ], 
+    "password": "jeansavol1234", 
+    "group": "doctor"
+  }, 
+  "root": {
+    "mail": [], 
+    "password": "gucci-mane", 
+    "group": "admin"
+  }, 
+  "yanis": {
+    "mail": [], 
+    "password": "abdoul12", 
+    "group": "doctor"
+  }
+}
