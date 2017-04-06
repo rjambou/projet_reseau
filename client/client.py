@@ -186,8 +186,6 @@ def session(username):
     print(message_session)
     while True:
         print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
-        if message_session.split(" ")[1] == "admin":
-            print("options user mail | delete mail | delete account")
         option = raw_input(username + " > ")
         s.send(option)
         time.sleep(1)
