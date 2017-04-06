@@ -52,9 +52,9 @@ def loginauth(username, password):
     
 def verify(username):
     if users.has_key(username)==True:
-        return False
+        return "false"
     else:
-        return True
+        return "true"
     
 def create(username, password,group):  
     users[username] = {}
@@ -83,30 +83,46 @@ def sendmail_server(username, recipient,subject,context):
     time.sleep(1)
     print("Mail has been sent to " + recipient)
 
+'''
 def sending(file):
-    f=open(file,"rb")
+    f=open(file,"r")
     l = f.read(1024)
     while (l):
         print 'Sending...'
         conn.send(l)
         l = f.read(1024)
     f.close()
+    
     print "Done Sending"
+<<<<<<< HEAD
 
 def receiving(file, username, group):
+=======
+'''
+def receiving(file,u , gr):
+    print("\n")
+    folder_path=os.getcwd()+"/"+gr
+    print(folder_path+"/"+gr)
+    print(os.listdir(folder_path))
+    #for path, dirs, files in os.walk(folder_path):
+    #    for filename in files:
+    #        print(filename)
     try:
         f=open(file,"w")
     except IOError :
         sub.call("touch " + file, shell=True )
     finally:
         l = conn.recv(1024)
-        os.chown(f, users[username], users[username][group])
-        os.chmod(f, 0774)
-        print(os.access(f, 0774))
-        while(l):
+        #os.chown(f, users[username], users[username][group])
+        #os.chmod(f, 0774)
+        #print(os.access(f, 0774))
+        while (l.split(" ")[0]!="fin"):
             print "receiving"
             f.write(l)
             l=conn.recv(BUFFER_SIZE)
+            if (l=="fin"):
+                break
+    
         f.close()
 
 class ClientThread(Thread):
@@ -131,6 +147,7 @@ class ClientThread(Thread):
                     username_exists="false"
                     conn.send(username_exists)
             data=conn.recv(1024)
+            print("data : "+data)
             #if not data: break
             commande = data.split(" ")
             print(commande)
@@ -167,6 +184,7 @@ class ClientThread(Thread):
                         print(username + " logout")
                         break
                     if option == "view mail":
+                        print(str(len(users[username]["mail"])))
                         conn.send(str(len(users[username]["mail"])))
                         time.sleep(1)
                         for mail in users[username]["mail"]:
@@ -215,9 +233,9 @@ class ClientThread(Thread):
                         if option_fichier=="creer un rapport":
                             time.sleep(1)
                             title=conn.recv(BUFFER_SIZE)
-                            receiving(title, username, group)
-                            print(os.access(title,0774))
-                            pass
+                            time.sleep(1)
+                            receiving(title, username, users[username]["group"])
+                            #print(os.access(title,0774))
 
                         elif option_fichier=="lire un rapport":
                             pass

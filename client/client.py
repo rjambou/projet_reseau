@@ -40,10 +40,13 @@ def login():
     print("Please enter your login")
     while True:
         username = raw_input("Username: ")
-        if not len(username) > 0:
-            print("Username can't be blank")
-        else:
+        s.send(username)
+        username_exists=s.recv(BUFFER_SIZE)
+        if username_exists=="true":
             break
+        else:
+            print("Invalid username, please try again.")
+            continue
     while True:
         password = getpass.getpass("Password : ")
         if not len(password) > 0:
@@ -55,6 +58,7 @@ def login():
     time.sleep(1)
     data=s.recv(BUFFER_SIZE)
     if data=="true":
+        s.send("session"+" "+str(username))
         return session(username)
     elif data == "false":
         print("Invalid username or password! you redirect to home")
@@ -85,9 +89,10 @@ def register_client():
         else:
             break
     while True:
-        group = raw_input("choice your group (doctor, nurse, secretary) : ")
-        if not len(group) > 0:
-            print("group can't be blank")
+        liste_groupes=["doctor","nurse","secretary"] #liste des groupes disponibles : l'utilisateur devra réessayer tant qu'il n'entre pas un de ceux-là
+        group = raw_input("choice your group (doctor, nurse, secretary) : ").lower() #avec .lower() la casse n'a pas d'importance
+        if group not in liste_groupes:
+            print("Ce groupe est invalide.")
             continue
         else:
             break
@@ -148,15 +153,17 @@ def shell(data):
     return a
 
 def sending(file):
-    f=open(file,"rb")
+    f=open(file,"r")
     l = f.read(1024)
     while (l):
         print 'Sending...'
         s.send(l)
-        l = f.read(1024)
+        l = f.read(1024)   
     f.close()
+    s.send("fin")
     print "Done Sending"
-
+    
+'''
 def receiving(file):
     try:
         f=open(file,"w")
@@ -170,6 +177,8 @@ def receiving(file):
             l=s.recv(BUFFER_SIZE)
         f.close()
 
+'''
+
 
 def session(username):
     current_dir=os.getcwd()
@@ -182,8 +191,6 @@ def session(username):
     print(message_session)
     while True:
         print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
-        if message_session.split(" ")[1] == "admin":
-            print("options user mail | delete mail | delete account")
         option = raw_input(username + " > ")
         s.send(option)
         time.sleep(1)
@@ -213,7 +220,6 @@ def session(username):
                 time.sleep(1)
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
-                    title=title+".odt"
                     s.send(title)
                     fichier=open(title,'w')
                     fichier.close()
@@ -224,6 +230,8 @@ def session(username):
                         time.sleep(1)
                         terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
                     sending(title)
+                    shell("rm " + title)
+                    break
                 elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
                     commande=raw_input("Please enter your filename : ")
                     data="libreoffice " + commande + "*"
