@@ -93,13 +93,16 @@ def sending(file):
     f.close()
     print "Done Sending"
 
-def receiving(file):
+def receiving(file, username, group):
     try:
         f=open(file,"w")
     except IOError :
         sub.call("touch " + file, shell=True )
     finally:
         l = conn.recv(1024)
+        os.chown(f, users[username], users[username][group])
+        os.chmod(f, 0774)
+        print(os.access(f, 0774))
         while(l):
             print "receiving"
             f.write(l)
@@ -117,23 +120,16 @@ class ClientThread(Thread):
 
     def run(self):
         while True:
-            username=conn.recv(1024)
-            print username
-            if verify(username):
-                valid="true"
-            else:
-                valid="false"
-            conn.send(valid)
-            if valid=="false":
-                while True:
-                    username=conn.recv(1024)
-                    if verify(username):
-                        valid="true"
-                    else:
-                        valid="false"
-                    conn.send(valid)
-                    if valid=="true":
-                        break
+            while True:
+                username=conn.recv(1024)
+                print username
+                if verify(username):
+                    username_exists="true"
+                    conn.send(username_exists)
+                    break
+                else:
+                    username_exists="false"
+                    conn.send(username_exists)
             data=conn.recv(1024)
             #if not data: break
             commande = data.split(" ")
@@ -143,8 +139,10 @@ class ClientThread(Thread):
                 password=commande[2]
                 if loginauth(username, password):
                     data="true"
+                    print("login auth true")
                 else:
                     data="false"
+                    print("login auth false")
             if (commande[0]=="register"):
                 username=commande[1]
                 password=commande[2]
@@ -217,7 +215,8 @@ class ClientThread(Thread):
                         if option_fichier=="creer un rapport":
                             time.sleep(1)
                             title=conn.recv(BUFFER_SIZE)
-                            receiving(title)
+                            receiving(title, username, group)
+                            print(os.access(title,0774))
                             pass
 
                         elif option_fichier=="lire un rapport":
@@ -309,6 +308,3 @@ while True:
 
 for t in threads:
     t.join()
-
-
-

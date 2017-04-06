@@ -15,6 +15,11 @@
     "password": "jeansavol1234", 
     "group": "doctor"
   }, 
+  "Claire": {
+    "mail": [], 
+    "password": "coucou12", 
+    "group": "nurse"
+  }, 
   "root": {
     "mail": [], 
     "password": "gucci-mane", 
