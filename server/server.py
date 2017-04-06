@@ -52,9 +52,9 @@ def loginauth(username, password):
     
 def verify(username):
     if users.has_key(username)==True:
-        return False
+        return "false"
     else:
-        return True
+        return "true"
     
 def create(username, password,group):  
     users[username] = {}
