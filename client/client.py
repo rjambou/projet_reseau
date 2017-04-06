@@ -58,6 +58,7 @@ def login():
     time.sleep(1)
     data=s.recv(BUFFER_SIZE)
     if data=="true":
+        s.send("session"+" "+str(username))
         return session(username)
     elif data == "false":
         print("Invalid username or password! you redirect to home")
