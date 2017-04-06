@@ -128,6 +128,7 @@ class ClientThread(Thread):
                     username_exists="false"
                     conn.send(username_exists)
             data=conn.recv(1024)
+            print("data : "+data)
             #if not data: break
             commande = data.split(" ")
             print(commande)
@@ -164,6 +165,7 @@ class ClientThread(Thread):
                         print(username + " logout")
                         break
                     if option == "view mail":
+                        print(str(len(users[username]["mail"])))
                         conn.send(str(len(users[username]["mail"])))
                         time.sleep(1)
                         for mail in users[username]["mail"]:
