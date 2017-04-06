@@ -153,15 +153,17 @@ def shell(data):
     return a
 
 def sending(file):
-    f=open(file,"rb")
+    f=open(file,"r")
     l = f.read(1024)
     while (l):
         print 'Sending...'
         s.send(l)
-        l = f.read(1024)
+        l = f.read(1024)   
     f.close()
+    s.send("fin")
     print "Done Sending"
-
+    
+'''
 def receiving(file):
     try:
         f=open(file,"w")
@@ -174,6 +176,8 @@ def receiving(file):
             f.write(l)
             l=s.recv(BUFFER_SIZE)
         f.close()
+
+'''
 
 
 def session(username):
@@ -216,7 +220,6 @@ def session(username):
                 time.sleep(1)
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
-                    title=title+".odt"
                     s.send(title)
                     fichier=open(title,'w')
                     fichier.close()
@@ -227,6 +230,8 @@ def session(username):
                         time.sleep(1)
                         terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
                     sending(title)
+                    shell("rm " + title)
+                    break
                 elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
                     commande=raw_input("Please enter your filename : ")
                     data="libreoffice " + commande + "*"

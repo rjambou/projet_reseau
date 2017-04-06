@@ -83,16 +83,18 @@ def sendmail_server(username, recipient,subject,context):
     time.sleep(1)
     print("Mail has been sent to " + recipient)
 
+'''
 def sending(file):
-    f=open(file,"rb")
+    f=open(file,"r")
     l = f.read(1024)
     while (l):
         print 'Sending...'
         conn.send(l)
         l = f.read(1024)
     f.close()
+    
     print "Done Sending"
-
+'''
 def receiving(file):
     try:
         f=open(file,"w")
@@ -100,10 +102,12 @@ def receiving(file):
         sub.call("touch " + file, shell=True )
     finally:
         l = conn.recv(1024)
-        while(l):
+        while (l.split(" ")[0]!="fin"):
             print "receiving"
             f.write(l)
             l=conn.recv(BUFFER_SIZE)
+            if (l=="fin"):
+                break
         f.close()
 
 class ClientThread(Thread):
@@ -214,8 +218,8 @@ class ClientThread(Thread):
                         if option_fichier=="creer un rapport":
                             time.sleep(1)
                             title=conn.recv(BUFFER_SIZE)
+                            time.sleep(1)
                             receiving(title)
-                            pass
 
                         elif option_fichier=="lire un rapport":
                             pass
