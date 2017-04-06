@@ -158,7 +158,7 @@ def shell(data):                            #Attention commande cd
     #print 'resultat', result
 
 TCP_IP = '0.0.0.0'
-TCP_PORT = 6264
+TCP_PORT = 6265
 BUFFER_SIZE = 1024
 
 ##prevoir un systeme de fermeture de connexion si fermeture du client (on supprime le thread)

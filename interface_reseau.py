@@ -1,10 +1,16 @@
 #!/usr/bin/python
 
 from Tkinter import *
+import accueil
+import os
 
-def interface():
+def interface(current, login):
 	def commande() :
 		print()
+	def logout():
+		global logo
+		logo=False
+		return logo
 
 # Creation de la fenetre principale (main window)
 	Mafenetre = Tk()
@@ -15,19 +21,23 @@ def interface():
 
 
 #Affichage du login  
-	Label_login = Label(Mafenetre, text = 'login', fg = 'black',relief=GROOVE,  font = ("login",30))
+	Label_login = Label(Mafenetre, text = login, fg = 'black',relief=GROOVE,  font = ("login",16), bg="white")
 	Label_login['bg']='bisque'
 	Label_login.pack()
 	Label_login.place(x=80, y=40)
 
-#Affichage du repertoire courant  
-	current_dir="0"
-	str_current_dir= StringVar()
-	str_current_dir.set("current directory : " + current_dir)
-	Label_current_dir = Label(Mafenetre, textvariable = str_current_dir, fg='black')
+#Affichage du repertoire courant 
+	current=str(current)
+	Label_current_dir= Label(Mafenetre, text="current directory : "+ current, fg="black", font=("Login", 14), bg="white", anchor="center")
 	Label_current_dir['bg']='bisque'
 	Label_current_dir.pack()
-	Label_current_dir.place(x=600, y=120)
+	Label_current_dir.place(x=500, y=120)
+	#str_current_dir= StringVar()
+	#str_current_dir.set("current directory : " + current)
+	#Label_current_dir = Label(Mafenetre, textvariable = str_current_dir, fg='black')
+	#Label_current_dir['bg']='bisque'
+	#Label_current_dir.pack()
+	#Label_current_dir.place(x=600, y=120)
 
 
 
@@ -57,12 +67,15 @@ def interface():
 	BoutonList.place( x=80, y= 280)
 
 # Creation d'un widget Button (bouton Logout)
-	BoutonList = Button(Mafenetre, text ='Logout', command = commande)
+	BoutonList = Button(Mafenetre, text ='Logout', command = logout)
 	BoutonList.pack()
 	BoutonList.place( x=600, y= 50)
 
 
-
-
 #Music()
 	Mafenetre.mainloop()
+
+	return logo, True
+#current_dir=os.getcwd()
+#current=os.chdir(current_dir)
+#print(interface(current, "CH"))

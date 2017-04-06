@@ -89,7 +89,6 @@ def login(username, password):
     time.sleep(1)
     data=s.recv(BUFFER_SIZE)
     if data=="true":
-        interface_reseau.interface()
         return session(username)
     elif data == "false":
         correct=False
@@ -231,12 +230,14 @@ def session(username):
     print(message_session)
     while True:
         print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
+        inter=interface_reseau.interface(current_dir, username)
+        print("inter", inter)
         if message_session.split(" ")[1] == "admin":
             print("options user mail | delete mail | delete account")
-        option = raw_input(username + " > ")
+        #option = raw_input(username + " > ")
         s.send(option)
         time.sleep(1)
-        if option == "logout":
+        if inter[0]==False:
             print("Logging out...")
             break
         elif option == "view mail":
@@ -334,7 +335,7 @@ def session(username):
 
 
 TCP_IP = '0.0.0.0'
-TCP_PORT = 6264
+TCP_PORT = 6265
 BUFFER_SIZE = 1024
 
 
