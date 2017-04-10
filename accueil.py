@@ -16,11 +16,13 @@ def accueil():
 	def connexion():
 		global option
 		option="login"
+		fenetre.destroy()
 		return option
 
 	def enregistrement():
 		global option
 		option="register"
+		fenetre.destroy()
 		return option
 
 #bouton "Se connecter"
@@ -34,5 +36,4 @@ def accueil():
 	bouton_valider.place(x=500, y=100)
 
 	fenetre.mainloop()
-	fenetre.destroy
 	return option

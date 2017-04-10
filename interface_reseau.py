@@ -3,6 +3,12 @@
 from Tkinter import *
 import accueil
 import os
+import tkFileDialog
+
+logo=True
+gestion=True
+ouvrir=0
+nom = True
 
 def interface(current, login):
 	def commande() :
@@ -10,7 +16,19 @@ def interface(current, login):
 	def logout():
 		global logo
 		logo=False
+		Mafenetre.destroy()
 		return logo
+
+	def openfile():
+		global rep, nom, gestion, ouvrir
+		rep=tkFileDialog.askopenfilename(title="gestionnaire de fichier", initialdir=current, initialfile="", multiple=True, filetypes=[("All","*")])
+		rep1=rep[0].split("/")
+		nom=rep1[-1]
+		gestion=False
+		ouvrir=1
+		fenetre.destroy()
+		return gestion, ouvrir, nom
+
 
 # Creation de la fenetre principale (main window)
 	Mafenetre = Tk()
@@ -26,28 +44,13 @@ def interface(current, login):
 	Label_login.pack()
 	Label_login.place(x=80, y=40)
 
-#Affichage du repertoire courant 
-	current=str(current)
-	Label_current_dir= Label(Mafenetre, text="current directory : "+ current, fg="black", font=("Login", 14), bg="white", anchor="center")
-	Label_current_dir['bg']='bisque'
-	Label_current_dir.pack()
-	Label_current_dir.place(x=500, y=120)
-	#str_current_dir= StringVar()
-	#str_current_dir.set("current directory : " + current)
-	#Label_current_dir = Label(Mafenetre, textvariable = str_current_dir, fg='black')
-	#Label_current_dir['bg']='bisque'
-	#Label_current_dir.pack()
-	#Label_current_dir.place(x=600, y=120)
-
-
-
 # Creation d'un widget Button (bouton Change Directory)
 	BoutonChangeDirectory = Button(Mafenetre, text ='Change Directory', command = commande)
 	BoutonChangeDirectory.pack()
 	BoutonChangeDirectory.place(x=80, y=120)
 
 # Creation d'un widget Visualize (bouton Vizualise)
-	BoutonVisualize = Button(Mafenetre, text ='Visualize file', command = commande) 
+	BoutonVisualize = Button(Mafenetre, text ='Visualize file', command = openfile) 
 	BoutonVisualize.pack()
 	BoutonVisualize.place(x=80, y=160)
 
@@ -74,8 +77,11 @@ def interface(current, login):
 
 #Music()
 	Mafenetre.mainloop()
-
-	return logo, True
+	print(logo)
+	print(gestion)
+	print(ouvrir)
+	print(nom)
+	return logo, gestion, ouvrir, nom
 #current_dir=os.getcwd()
 #current=os.chdir(current_dir)
 #print(interface(current, "CH"))

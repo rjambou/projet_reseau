@@ -21,7 +21,7 @@ def fenetreauth(correct):
 		command="login"
 		username=Login_texte.get()
 		mdp=Mdp_texte.get()
-		fenetre.quit
+		fenetre.destroy()
 		return 0
 
 	fenetre=Tk()		#création fenetre
@@ -88,7 +88,7 @@ def fenetresave(blank, length, nb, lt, already_register, pwd, gr):
 		mdp=Mdp_texte.get()
 		mdp2=Mdp2_texte.get()
 		selection=tab_group[liste_group.curselection()[0]]
-		fenetre.quit
+		fenetre2.destroy()
 		return 0
 
 	fenetre2=Tk()		#création fenetre
@@ -187,6 +187,7 @@ def fenetresave(blank, length, nb, lt, already_register, pwd, gr):
 		notgr.place(x=0, y=450)
 
 	fenetre2.mainloop()
+	
 
 	return command, username, mdp, mdp2, selection
 #print fenetresave(True, True, True, True, True)

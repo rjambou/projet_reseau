@@ -231,7 +231,7 @@ def session(username):
     while True:
         print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
         inter=interface_reseau.interface(current_dir, username)
-        print("inter", inter)
+        print("inter", inter[0], inter[1], inter[2], inter[3])
         if message_session.split(" ")[1] == "admin":
             print("options user mail | delete mail | delete account")
         #option = raw_input(username + " > ")
@@ -254,7 +254,7 @@ def session(username):
             time.sleep(1)
             resultats=s.recv(BUFFER_SIZE)
             print(resultats)
-        elif option == "gestion de fichier":
+        elif inter[1] == False:
             while True:
                 print("Options: creer un rapport | lire un rapport | retour")
                 option_fichier=raw_input(username + " > ")
@@ -273,8 +273,9 @@ def session(username):
                         time.sleep(1)
                     sending(title)
 
-                elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
-                    commande=raw_input("Please enter your filename : ")
+                elif inter[2]== 2:#le fichier est chez le client ...a modifier
+                    #commande=raw_input("Please enter your filename : ")
+                    commande=inter[3]
                     data="libreoffice " + commande + "*"
                     data=sub.call(data, shell=True)
                 elif option_fichier=="retour":
