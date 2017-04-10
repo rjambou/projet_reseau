@@ -1,4 +1,9 @@
 {
+  "abcd": {
+    "mail": [], 
+    "password": "abcd1234", 
+    "group": "nurse"
+  }, 
   "remi": {
     "mail": [], 
     "password": "remijambou1234", 

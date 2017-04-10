@@ -27,21 +27,37 @@ users = {
 current_dir=os.getcwd()
 os.chdir(current_dir) #a changer en fonction de l'installation                       
 
-def serialize_dico( dico_to_serialize, filepath = DEFAULT_FILEPATH ):
+def serialize_dico( dico_to_serialize, filepath):
     try:
         with open(filepath, 'w') as output_file:
             output_file.write( json.dumps( dico_to_serialize, indent = 2 ) )
     except IOError:
         print "serialize_dico > Impossible d'ouvrir le fichier"
 
-def deserialize_dico( filepath = DEFAULT_FILEPATH ):
+def deserialize_dico( filepath ):
     try:
         with open(filepath, 'r') as input_file:
             return json.loads( input_file.read() )
     except IOError:
         print "deserialize_dico > Impossible d'ouvrir le fichier"
 
-users=deserialize_dico()
+users=deserialize_dico('comptes.json')
+permissions=deserialize_dico('permissions.json')
+
+def ajout_permissions (chaine, title) :
+    if chaine[0]=="y":
+        permissions["doctor"]["fichiers"].append(title)
+    if chaine[1]=="y":
+        permissions["nurse"]["fichiers"].append(title)
+    if chaine[2]=="y":
+        permissions["secretary"]["fichiers"].append(title)
+    serialize_dico(permissions, 'permissions.json')
+
+def check_droits(classe, nom_fichier):
+    if nom_fichier in permissions[classe]["fichiers"]:
+        return "true"
+    else:
+        return "false"
 
 def loginauth(username, password):
     if username in users:
@@ -63,7 +79,7 @@ def create(username, password,group):
     users[username]["mail"] = []
     time.sleep(1)
     print("Account has been created")
-    serialize_dico(users)
+    serialize_dico(users,'comptes.json')
 
 #arefaire
 def username_valid(recipient):
@@ -79,7 +95,7 @@ def username_valid(recipient):
 def sendmail_server(username, recipient,subject,context):
     print("Sending mail...")
     users[recipient]["mail"].append(["Sender: " + username, "Subject: " + subject, "Context: " + context])
-    serialize_dico(users)
+    serialize_dico(users, 'comptes.json')
     time.sleep(1)
     print("Mail has been sent to " + recipient)
 
@@ -213,13 +229,14 @@ class ClientThread(Thread):
                             data=shell(commande_shell)
                             conn.send(data)
                     if option == "gestion de fichier":
-                        
                         option_fichier = conn.recv(BUFFER_SIZE)
                         if option_fichier=="creer un rapport":
                             recu = ""
                             recu = conn.recv(1024)
                             nomFich = recu.split("NAME ")[1]
                             nomFich = nomFich.split("OCTETS ")[0]
+                            file_access=conn.recv(BUFFER_SIZE)
+                            ajout_permissions(file_access,nomFich)
                             taille = recu.split("OCTETS ")[1]
                             print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
                             taille=int(taille)
@@ -235,6 +252,11 @@ class ClientThread(Thread):
                             os.fsync(f.fileno())
                             f.close
                         elif option_fichier=="lire un rapport":
+                            nom_fichier=conn.recv(BUFFER_SIZE) #recoit le nom du rapport à lire
+                            username=conn.recv(BUFFER_SIZE) #recoit le username de l'utilisateur
+                            classe=users[username]["group"] #le serveur cherche la classe de "username" dans le dictionnaire
+                            droit=check_droits(classe, nom_fichier) #vérifie si l'utilisateur est autorisé ...
+                            conn.send(droit) # ... et envoie sa réponse au client
                             pass
 
                     if users[username]["group"] == "admin":
@@ -259,7 +281,7 @@ class ClientThread(Thread):
                                 info="true"
                                 conn.send(info)
                                 users[userinfo]["mail"] = []
-                                serialize_dico(users)
+                                serialize_dico(users,"comptes.json")
                                 time.sleep(1)
                                 print(userinfo + "'s mail has been deleted")
                             else:
@@ -275,7 +297,7 @@ class ClientThread(Thread):
                                     if confirm == "yes":
                                         print("Deleting " + userinfo + "'s account...")
                                         del users[userinfo]
-                                        serialize_dico(users)
+                                        serialize_dico(users,"comptes.json")
                                         time.sleep(1)
                                         conn.send(userinfo + "'s account has been deleted")
                                         break
