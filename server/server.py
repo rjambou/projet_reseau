@@ -229,12 +229,11 @@ class ClientThread(Thread):
                                 recu = ""
                                 recu = conn.recv(1024)
                                 f = open(nomFich, "wb") 
-                                if recu.split(" ")[0] == "BYE":
-                                    break
-                                else: 
-                                    f.write(recu)                 
-                                    num = num + 1024
-
+                                f.write(recu)                 
+                                num = num + 1024
+                            f.flush()
+                            os.fsync(f.fileno())
+                            f.close
                         elif option_fichier=="lire un rapport":
                             pass
 

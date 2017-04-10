@@ -236,7 +236,7 @@ def session(username):
                     num = 0
                     octets = octets 
                     fich = open(title, "r")
-
+                    time.sleep(1)
                     if octets > 1024:
                         for i in range(octets ):        
                                 fich.seek(num, 0) 
@@ -248,9 +248,8 @@ def session(username):
                         donnees = fich.read()
                         s.send(donnees)
 
-                    fich.close()
-                    s.send("BYE") 
-                    #shell("rm " + title)
+                    fich.close() 
+                    shell("rm " + title)
                     break
                 elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
                     commande=raw_input("Please enter your filename : ")
