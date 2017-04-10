@@ -225,9 +225,15 @@ def session(username):
         option = raw_input(username + " > ")
         s.send(option)
         time.sleep(1)
+
+#logout
+
         if option == "logout":
         	print("Logging out...")
         	break
+
+#view mail
+
         elif option == "view mail":
             print("Current mail:")
             nombre_mail=s.recv(BUFFER_SIZE)
@@ -235,20 +241,32 @@ def session(username):
             for i in range(int(nombre_mail)):
                 mail=s.recv(BUFFER_SIZE)
                 print(mail)
+
+#send mail
+
         elif option == "send mail":
         	sendmail_client(username)
+
+#commande shell
+
         elif option == "commande shell":
         	commande=raw_input("Please enter your commande ! ")
         	s.send(commande)
         	time.sleep(1)
         	resultats=s.recv(BUFFER_SIZE)
         	print(resultats)
+
+#gestion de fichier
+
         elif option == "gestion de fichier":
             while True:
                 print("Options: creer un rapport | lire un rapport | retour")
                 option_fichier=raw_input(username + " > ")
                 s.send(option_fichier)
                 time.sleep(1)
+
+    #creer un rapport 
+
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
                     time.sleep(1)
@@ -286,6 +304,8 @@ def session(username):
                     shell("rm " + title)
                     break
 
+    #lire un rapport
+
                 elif option_fichier=="lire un rapport":
                     nom_fichier=raw_input("Please enter your filename : ")
                     s.send(nom_fichier) #envoie au serveur pour savoir si l'utilisateur a les droits
@@ -319,6 +339,9 @@ def session(username):
                         print("Vous n'avez pas le droit de lire ce fichier.")
                     shell("rm " + nomFich)
                     break
+
+    #retour
+
                 elif option_fichier=="retour":
                     break
                 else:

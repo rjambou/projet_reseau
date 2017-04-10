@@ -27,14 +27,14 @@ users = {
 current_dir=os.getcwd()
 os.chdir(current_dir) #a changer en fonction de l'installation                       
 
-def serialize_dico( dico_to_serialize, filepath):
+def serialize_dico( dico_to_serialize, filepath): #met a jour un dictionnaire
     try:
         with open(filepath, 'w') as output_file:
             output_file.write( json.dumps( dico_to_serialize, indent = 2 ) )
     except IOError:
         print "serialize_dico > Impossible d'ouvrir le fichier"
 
-def deserialize_dico( filepath ):
+def deserialize_dico( filepath ): #cree un dictionnaire
     try:
         with open(filepath, 'r') as input_file:
             return json.loads( input_file.read() )
@@ -44,7 +44,7 @@ def deserialize_dico( filepath ):
 users=deserialize_dico('comptes.json')
 permissions=deserialize_dico('permissions.json')
 
-def ajout_permissions (chaine, title) :
+def ajout_permissions (chaine, title) : #donne les permissions ou non sur un fichier aux differentes classes
     if chaine[0]=="y":
         permissions["doctor"]["fichiers"].append(title)
     if chaine[1]=="y":
@@ -53,26 +53,26 @@ def ajout_permissions (chaine, title) :
         permissions["secretary"]["fichiers"].append(title)
     serialize_dico(permissions, 'permissions.json')
 
-def check_droits(classe, nom_fichier):
+def check_droits(classe, nom_fichier): #verifie si la classe "classe" a acces au fichier "nom_fichier"
     if nom_fichier in permissions[classe]["fichiers"]:
         return "true"
     else:
         return "false"
 
-def loginauth(username, password):
+def loginauth(username, password): #verifie si le mot de passe de "username" est bien "password"
     if username in users:
         if password == users[username]["password"]:
             print("Login successful")
             return True
     return False
     
-def verify(username):
+def verify(username): #verifie si "username" existe dans users
     if users.has_key(username)==True:
         return "false"
     else:
         return "true"
     
-def create(username, password,group):  
+def create(username, password,group): #cree un utilisateur "username" avec le mot de passe "password" appartenant au groupe "group"
     users[username] = {}
     users[username]["password"] = password
     users[username]["group"] = group
@@ -82,7 +82,7 @@ def create(username, password,group):
     serialize_dico(users,'comptes.json')
 
 #arefaire
-def username_valid(recipient):
+def username_valid(recipient): #verifie si "username" existe dans users
     if users.has_key(recipient):
         return "true"
     else:
@@ -92,7 +92,7 @@ def username_valid(recipient):
 
 
 
-def sendmail_server(username, recipient,subject,context):
+def sendmail_server(username, recipient,subject,context): #envoie un mail de "username" à "recipient" avec le sujet "subject" et le texte "context"
     print("Sending mail...")
     users[recipient]["mail"].append(["Sender: " + username, "Subject: " + subject, "Context: " + context])
     serialize_dico(users, 'comptes.json')
@@ -152,6 +152,9 @@ class ClientThread(Thread):
             #if not data: break
             commande = data.split(" ")
             print(commande)
+
+#login
+
             if (commande[0]=="login"):
                 username=commande[1]
                 password=commande[2]
@@ -161,6 +164,9 @@ class ClientThread(Thread):
                 else:
                     data="false"
                     print("login auth false")
+
+#register
+
             if (commande[0]=="register"):
                 username=commande[1]
                 password=commande[2]
@@ -170,20 +176,28 @@ class ClientThread(Thread):
                     data="created"
                 else:
                     data="uncreated"
+
+#session
+
             if commande[0] == "session":
                 username=commande[1]
                 if users[username]["group"] == "admin":
                     data="role: admin"
                     conn.send(data)
-
                 else:
                     data="role: user as " + users[username]["group"]
                     conn.send(data)
                 while True:
+
+    #logout
+
                     option=conn.recv(BUFFER_SIZE)
                     if option == "logout":
                         print(username + " logout")
                         break
+
+    #view mail
+
                     if option == "view mail":
                         print(str(len(users[username]["mail"])))
                         conn.send(str(len(users[username]["mail"])))
@@ -191,6 +205,9 @@ class ClientThread(Thread):
                         for mail in users[username]["mail"]:
                             mail=str(mail)
                             conn.send(mail)
+
+    #send mail
+
                     if option == "send mail":
                         recipient=conn.recv(BUFFER_SIZE)
                         validity=username_valid(recipient)
@@ -205,6 +222,9 @@ class ClientThread(Thread):
                         time.sleep(1)
                         context = conn.recv(BUFFER_SIZE)
                         sendmail_server(username,recipient,subject,context)
+
+    #commande shell
+
                     if option == "commande shell":
                         commande_shell=conn.recv(BUFFER_SIZE) #string
                         tab_commande=commande_shell.split(' ')
@@ -228,8 +248,14 @@ class ClientThread(Thread):
                         else:
                             data=shell(commande_shell)
                             conn.send(data)
+
+    #gestion de fichier
+
                     if option == "gestion de fichier":
                         option_fichier = conn.recv(BUFFER_SIZE)
+
+        #creer un rapport
+
                         if option_fichier=="creer un rapport":
                             recu = ""
                             recu = conn.recv(1024)
@@ -252,6 +278,7 @@ class ClientThread(Thread):
                             os.fsync(f.fileno())
                             f.close()
                         
+        #lire un rapport
 
                         elif option_fichier=="lire un rapport":
                             nom_fichier=conn.recv(BUFFER_SIZE) #recoit le nom du rapport à lire
