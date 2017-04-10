@@ -66,7 +66,7 @@ def securite(password): #oblige a avoir un mdp safe
 
 
 
-def login(): #gere le login et redirige vers "session"
+def login():
     print("Please enter your login")
     while True:
         username = raw_input("Username: ")
@@ -91,7 +91,7 @@ def login(): #gere le login et redirige vers "session"
         s.send("session"+" "+str(username))
         return session(username)
     elif data == "false":
-        print("Invalid username or password! you redirect to home") 
+        print("Invalid username or password! you redirect to home")
 
 def register_client():
     continuer=True
@@ -225,15 +225,9 @@ def session(username):
         option = raw_input(username + " > ")
         s.send(option)
         time.sleep(1)
-
-#logout
-
         if option == "logout":
         	print("Logging out...")
         	break
-
-#view mail
-
         elif option == "view mail":
             print("Current mail:")
             nombre_mail=s.recv(BUFFER_SIZE)
@@ -241,32 +235,20 @@ def session(username):
             for i in range(int(nombre_mail)):
                 mail=s.recv(BUFFER_SIZE)
                 print(mail)
-
-#send mail
-
         elif option == "send mail":
         	sendmail_client(username)
-
-#commande shell 
-
         elif option == "commande shell":
         	commande=raw_input("Please enter your commande ! ")
         	s.send(commande)
         	time.sleep(1)
         	resultats=s.recv(BUFFER_SIZE)
         	print(resultats)
-
-#gestion de fichier
-
         elif option == "gestion de fichier":
             while True:
                 print("Options: creer un rapport | lire un rapport | retour")
                 option_fichier=raw_input(username + " > ")
                 s.send(option_fichier)
                 time.sleep(1)
-
-    #creer un rapport
-
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
                     time.sleep(1)
@@ -304,8 +286,6 @@ def session(username):
                     shell("rm " + title)
                     break
 
-    #lire un rapport
-
                 elif option_fichier=="lire un rapport":
                     nom_fichier=raw_input("Please enter your filename : ")
                     s.send(nom_fichier) #envoie au serveur pour savoir si l'utilisateur a les droits
@@ -313,14 +293,32 @@ def session(username):
                     s.send(username) #envoie le username au serveur (qui vérifie la classe) pour savoir si l'utilisateur a les droits
                     time.sleep(1) 
                     droit=s.recv(BUFFER_SIZE) #recoit la réponse du serveur pour les droits
+                    time.sleep(1)
                     if droit=="true":
+                        recu = ""
+                        recu = s.recv(1024)
+                        nomFich = recu.split("NAME ")[1]
+                        nomFich = nomFich.split("OCTETS ")[0]
+                        taille = recu.split("OCTETS ")[1]
+                        print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
+                        taille=int(taille)
+                        num = 0
+                        while num<taille:
+                            time.sleep(1)
+                            recu = ""
+                            recu = s.recv(1024)
+                            f = open(nomFich, "wb") 
+                            f.write(recu)                 
+                            num = num + 1024
+                        f.flush()
+                        os.fsync(f.fileno())
+                        f.close()
                         data="libreoffice " + nom_fichier + "*"
                         data=sub.call(data, shell=True)
                     else:
                         print("Vous n'avez pas le droit de lire ce fichier.")
-
-    #retour de la gestion de fichiers
-
+                    shell("rm " + nomFich)
+                    break
                 elif option_fichier=="retour":
                     break
                 else:
