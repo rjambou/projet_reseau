@@ -13,8 +13,38 @@ import signal
 current_dir=os.getcwd()
 os.chdir(current_dir) #le path change automatiquement                    
 
+def droits(): #gere les droits d'un fichier
+    access_string=""
+    print("Can doctors access your files ? Yes(Y) or No(N) ?")
+    while True :
+        doctor_access=raw_input("> ")
+        if doctor_access.lower() in ["y","n"]:
+            access_string+=doctor_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    print("Can nurses access your files ? Yes(Y) or No(N) ?")
+    while True :
+        nurse_access=raw_input("> ")
+        if doctor_access.lower() in ["y","n"]:
+            access_string+=nurse_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    print("Can secretaries access your files ? Yes(Y) or No(N) ?")
+    while True :
+        secretary_access=raw_input("> ")
+        if secretary_access.lower() in ["y","n"]:
+            access_string+=secretary_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    return access_string #Exemple : "YYN"
 
-def securite(password):
+def securite(password): #oblige a avoir un mdp safe
     if len(password)<8:
         print("Your password is not long enough. (8 caracters min.)")
         return False 
@@ -221,6 +251,7 @@ def session(username):
                 time.sleep(1)
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
+                    time.sleep(1)
                     fichier=open(title,'w')
                     fichier.close()
                     data="libreoffice " + title
@@ -233,6 +264,9 @@ def session(username):
                     octets = os.path.getsize(title)
                     print(octets)
                     s.send("NAME " + title + "OCTETS " + str(octets))
+                    file_access=droits()
+                    s.send(file_access)
+                    time.sleep(1)
                     num = 0
                     octets = octets 
                     fich = open(title, "r")
@@ -251,12 +285,22 @@ def session(username):
                     fich.close() 
                     shell("rm " + title)
                     break
-                elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
-                    commande=raw_input("Please enter your filename : ")
-                    data="libreoffice " + commande + "*"
-                    data=sub.call(data, shell=True)
+                elif option_fichier=="lire un rapport":
+                    nom_fichier=raw_input("Please enter your filename : ")
+                    s.send(nom_fichier) #envoie au serveur pour savoir si l'utilisateur a les droits
+                    time.sleep(1)
+                    s.send(username) #envoie le username au serveur (qui vérifie la classe) pour savoir si l'utilisateur a les droits
+                    time.sleep(1) 
+                    droit=s.recv(BUFFER_SIZE) #recoit la réponse du serveur pour les droits
+                    if droit=="true":
+                        data="libreoffice " + nom_fichier + "*"
+                        data=sub.call(data, shell=True)
+                    else:
+                        print("Vous n'avez pas le droit de lire ce fichier.")
                 elif option_fichier=="retour":
                     break
+                else:
+                    print("This is not an option.")
 
         elif message_session.split(" ")[1] == "admin":
             if option == "user mail":
@@ -321,8 +365,8 @@ s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 while 1:
     print("Welcome to the system. Please register or login.")
-    print("Options: register | login | exit")
     while True:
+        print("Options: register | login | exit")
         option =raw_input("> ")
         if option == "login":
             login()
