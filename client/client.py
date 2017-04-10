@@ -155,6 +155,7 @@ def shell(data):
 def sending(file):
     f=open(file,"r")
     l = f.read(1024)
+    size=os.path.getsize(file)
     while (l):
         print 'Sending...'
         s.send(l)
@@ -220,7 +221,6 @@ def session(username):
                 time.sleep(1)
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
-                    s.send(title)
                     fichier=open(title,'w')
                     fichier.close()
                     data="libreoffice " + title
@@ -229,8 +229,28 @@ def session(username):
                     while terminer!="Y":
                         time.sleep(1)
                         terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
-                    sending(title)
-                    shell("rm " + title)
+                    time.sleep(2)
+                    octets = os.path.getsize(title)
+                    print(octets)
+                    s.send("NAME " + title + "OCTETS " + str(octets))
+                    num = 0
+                    octets = octets 
+                    fich = open(title, "r")
+
+                    if octets > 1024:
+                        for i in range(octets ):        
+                                fich.seek(num, 0) 
+                                donnees = fich.read(1024)    
+                                s.send(donnees) 
+                                num += 1024
+                    
+                    else: 
+                        donnees = fich.read()
+                        s.send(donnees)
+
+                    fich.close()
+                    s.send("BYE") 
+                    #shell("rm " + title)
                     break
                 elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
                     commande=raw_input("Please enter your filename : ")
@@ -294,7 +314,7 @@ def session(username):
 
 
 TCP_IP = '0.0.0.0'
-TCP_PORT = 6263
+TCP_PORT = 6264
 BUFFER_SIZE = 1024
 
 

@@ -94,35 +94,20 @@ def sending(file):
     f.close()
     
     print "Done Sending"
-<<<<<<< HEAD
-
-def receiving(file, username, group):
-=======
 '''
-def receiving(file,u , gr):
-    print("\n")
-    folder_path=os.getcwd()+"/"+gr
-    print(folder_path+"/"+gr)
-    print(os.listdir(folder_path))
-    #for path, dirs, files in os.walk(folder_path):
-    #    for filename in files:
-    #        print(filename)
+def receiving(file):
     try:
         f=open(file,"w")
     except IOError :
         sub.call("touch " + file, shell=True )
     finally:
         l = conn.recv(1024)
-        #os.chown(f, users[username], users[username][group])
-        #os.chmod(f, 0774)
-        #print(os.access(f, 0774))
         while (l.split(" ")[0]!="fin"):
             print "receiving"
             f.write(l)
             l=conn.recv(BUFFER_SIZE)
             if (l=="fin"):
                 break
-    
         f.close()
 
 class ClientThread(Thread):
@@ -231,11 +216,24 @@ class ClientThread(Thread):
                         
                         option_fichier = conn.recv(BUFFER_SIZE)
                         if option_fichier=="creer un rapport":
-                            time.sleep(1)
-                            title=conn.recv(BUFFER_SIZE)
-                            time.sleep(1)
-                            receiving(title, username, users[username]["group"])
-                            #print(os.access(title,0774))
+                            recu = ""
+                            recu = conn.recv(1024)
+                            nomFich = recu.split("NAME ")[1]
+                            nomFich = nomFich.split("OCTETS ")[0]
+                            taille = recu.split("OCTETS ")[1]
+                            print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
+                            taille=int(taille)
+                            num = 0
+                            while num<taille:
+                                time.sleep(1)
+                                recu = ""
+                                recu = conn.recv(1024)
+                                f = open(nomFich, "wb") 
+                                if recu.split(" ")[0] == "BYE":
+                                    break
+                                else: 
+                                    f.write(recu)                 
+                                    num = num + 1024
 
                         elif option_fichier=="lire un rapport":
                             pass
@@ -304,7 +302,7 @@ def shell(data):                            #Attention commande cd
     #print 'resultat', result
 
 TCP_IP = '0.0.0.0'
-TCP_PORT = 6263
+TCP_PORT = 6264
 BUFFER_SIZE = 1024
 
 ##prevoir un systeme de fermeture de connexion si fermeture du client (on supprime le thread)
@@ -326,3 +324,6 @@ while True:
 
 for t in threads:
     t.join()
+
+
+

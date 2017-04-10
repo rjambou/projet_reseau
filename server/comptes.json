@@ -15,18 +15,19 @@
     "password": "jeansavol1234", 
     "group": "doctor"
   }, 
-  "Claire": {
-    "mail": [], 
-    "password": "coucou12", 
-    "group": "nurse"
-  }, 
   "root": {
     "mail": [], 
     "password": "gucci-mane", 
     "group": "admin"
   }, 
   "yanis": {
-    "mail": [], 
+    "mail": [
+      [
+        "Sender: jean", 
+        "Subject: rebonjour", 
+        "Context: poiuytredfghjk"
+      ]
+    ], 
     "password": "abdoul12", 
     "group": "doctor"
   }
