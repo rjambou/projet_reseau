@@ -250,14 +250,38 @@ class ClientThread(Thread):
                                 num = num + 1024
                             f.flush()
                             os.fsync(f.fileno())
-                            f.close
+                            f.close()
+                        
+
                         elif option_fichier=="lire un rapport":
                             nom_fichier=conn.recv(BUFFER_SIZE) #recoit le nom du rapport à lire
                             username=conn.recv(BUFFER_SIZE) #recoit le username de l'utilisateur
                             classe=users[username]["group"] #le serveur cherche la classe de "username" dans le dictionnaire
                             droit=check_droits(classe, nom_fichier) #vérifie si l'utilisateur est autorisé ...
                             conn.send(droit) # ... et envoie sa réponse au client
-                            pass
+                            time.sleep(1)
+                            if droit=="true":
+                                octets = os.path.getsize(nom_fichier)
+                                print(octets)
+                                conn.send("NAME " + nom_fichier + "OCTETS " + str(octets))
+                                time.sleep(1)
+                                num = 0
+                                octets = octets 
+                                fich = open(nom_fichier, "r")
+                                time.sleep(1)
+                                if octets > 1024:
+                                    for i in range(octets ):        
+                                            fich.seek(num, 0) 
+                                            donnees = fich.read(1024)    
+                                            conn.send(donnees) 
+                                            num += 1024
+                                
+                                else: 
+                                    donnees = fich.read()
+                                    conn.send(donnees)
+
+                            fich.close() 
+
 
                     if users[username]["group"] == "admin":
                         if option == "user mail":
@@ -315,12 +339,12 @@ class ClientThread(Thread):
             print("received data:", data)
             conn.sendall(data)
 
-def shell(data):                            #Attention commande cd
+def shell(data):                            
     a=sub.check_output(data, shell=True)
     if (a==''):
         a='commande reussie'
     return a
-    #print 'resultat', result
+
 
 TCP_IP = '0.0.0.0'
 TCP_PORT = 6264

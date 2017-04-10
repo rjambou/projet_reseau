@@ -4,12 +4,11 @@
   }, 
   "doctor": {
     "fichiers": [
-      "bonjour"
+      "titi", 
+      "toto"
     ]
   }, 
   "secretary": {
-    "fichiers": [
-      "abcde"
-    ]
+    "fichiers": []
   }
 }

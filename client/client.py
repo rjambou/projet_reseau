@@ -285,6 +285,7 @@ def session(username):
                     fich.close() 
                     shell("rm " + title)
                     break
+
                 elif option_fichier=="lire un rapport":
                     nom_fichier=raw_input("Please enter your filename : ")
                     s.send(nom_fichier) #envoie au serveur pour savoir si l'utilisateur a les droits
@@ -292,11 +293,32 @@ def session(username):
                     s.send(username) #envoie le username au serveur (qui vérifie la classe) pour savoir si l'utilisateur a les droits
                     time.sleep(1) 
                     droit=s.recv(BUFFER_SIZE) #recoit la réponse du serveur pour les droits
+                    time.sleep(1)
                     if droit=="true":
+                        recu = ""
+                        recu = s.recv(1024)
+                        nomFich = recu.split("NAME ")[1]
+                        nomFich = nomFich.split("OCTETS ")[0]
+                        taille = recu.split("OCTETS ")[1]
+                        print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
+                        taille=int(taille)
+                        num = 0
+                        while num<taille:
+                            time.sleep(1)
+                            recu = ""
+                            recu = s.recv(1024)
+                            f = open(nomFich, "wb") 
+                            f.write(recu)                 
+                            num = num + 1024
+                        f.flush()
+                        os.fsync(f.fileno())
+                        f.close()
                         data="libreoffice " + nom_fichier + "*"
                         data=sub.call(data, shell=True)
                     else:
                         print("Vous n'avez pas le droit de lire ce fichier.")
+                    shell("rm " + nomFich)
+                    break
                 elif option_fichier=="retour":
                     break
                 else:
