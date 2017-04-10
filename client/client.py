@@ -13,8 +13,38 @@ import signal
 current_dir=os.getcwd()
 os.chdir(current_dir) #le path change automatiquement                    
 
+def droits(): #gere les droits d'un fichier
+    access_string=""
+    print("Can doctors access your files ? Yes(Y) or No(N) ?")
+    while True :
+        doctor_access=raw_input("> ")
+        if doctor_access.lower() in ["y","n"]:
+            access_string+=doctor_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    print("Can nurses access your files ? Yes(Y) or No(N) ?")
+    while True :
+        nurse_access=raw_input("> ")
+        if doctor_access.lower() in ["y","n"]:
+            access_string+=nurse_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    print("Can secretaries access your files ? Yes(Y) or No(N) ?")
+    while True :
+        secretary_access=raw_input("> ")
+        if secretary_access.lower() in ["y","n"]:
+            access_string+=secretary_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    return access_string #Exemple : "YYN"
 
-def securite(password):
+def securite(password): #oblige a avoir un mdp safe
     if len(password)<8:
         print("Your password is not long enough. (8 caracters min.)")
         return False 
@@ -155,6 +185,7 @@ def shell(data):
 def sending(file):
     f=open(file,"r")
     l = f.read(1024)
+    size=os.path.getsize(file)
     while (l):
         print 'Sending...'
         s.send(l)
@@ -220,7 +251,7 @@ def session(username):
                 time.sleep(1)
                 if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
                     title=raw_input("Enter your title of file : ")
-                    s.send(title)
+                    time.sleep(1)
                     fichier=open(title,'w')
                     fichier.close()
                     data="libreoffice " + title
@@ -229,15 +260,69 @@ def session(username):
                     while terminer!="Y":
                         time.sleep(1)
                         terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
-                    sending(title)
+                    time.sleep(2)
+                    octets = os.path.getsize(title)
+                    print(octets)
+                    s.send("NAME " + title + "OCTETS " + str(octets))
+                    file_access=droits()
+                    s.send(file_access)
+                    time.sleep(1)
+                    num = 0
+                    octets = octets 
+                    fich = open(title, "r")
+                    time.sleep(1)
+                    if octets > 1024:
+                        for i in range(octets ):        
+                                fich.seek(num, 0) 
+                                donnees = fich.read(1024)    
+                                s.send(donnees) 
+                                num += 1024
+                    
+                    else: 
+                        donnees = fich.read()
+                        s.send(donnees)
+
+                    fich.close() 
                     shell("rm " + title)
                     break
-                elif option_fichier=="lire un rapport":#le fichier est chez le client ...a modifier
-                    commande=raw_input("Please enter your filename : ")
-                    data="libreoffice " + commande + "*"
-                    data=sub.call(data, shell=True)
+
+                elif option_fichier=="lire un rapport":
+                    nom_fichier=raw_input("Please enter your filename : ")
+                    s.send(nom_fichier) #envoie au serveur pour savoir si l'utilisateur a les droits
+                    time.sleep(1)
+                    s.send(username) #envoie le username au serveur (qui vérifie la classe) pour savoir si l'utilisateur a les droits
+                    time.sleep(1) 
+                    droit=s.recv(BUFFER_SIZE) #recoit la réponse du serveur pour les droits
+                    time.sleep(1)
+                    if droit=="true":
+                        recu = ""
+                        recu = s.recv(1024)
+                        nomFich = recu.split("NAME ")[1]
+                        nomFich = nomFich.split("OCTETS ")[0]
+                        taille = recu.split("OCTETS ")[1]
+                        print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
+                        taille=int(taille)
+                        num = 0
+                        while num<taille:
+                            time.sleep(1)
+                            recu = ""
+                            recu = s.recv(1024)
+                            f = open(nomFich, "wb") 
+                            f.write(recu)                 
+                            num = num + 1024
+                        f.flush()
+                        os.fsync(f.fileno())
+                        f.close()
+                        data="libreoffice " + nom_fichier + "*"
+                        data=sub.call(data, shell=True)
+                    else:
+                        print("Vous n'avez pas le droit de lire ce fichier.")
+                    shell("rm " + nomFich)
+                    break
                 elif option_fichier=="retour":
                     break
+                else:
+                    print("This is not an option.")
 
         elif message_session.split(" ")[1] == "admin":
             if option == "user mail":
@@ -294,7 +379,7 @@ def session(username):
 
 
 TCP_IP = '0.0.0.0'
-TCP_PORT = 6263
+TCP_PORT = 6264
 BUFFER_SIZE = 1024
 
 
@@ -302,8 +387,8 @@ s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 while 1:
     print("Welcome to the system. Please register or login.")
-    print("Options: register | login | exit")
     while True:
+        print("Options: register | login | exit")
         option =raw_input("> ")
         if option == "login":
             login()
