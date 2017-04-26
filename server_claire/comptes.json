@@ -2,38 +2,43 @@
   "remou": {
     "mail": [], 
     "password": "abcd", 
-    "group": "user"
+    "group": "doctor"
   }, 
   "toto": {
     "mail": [
       [
         "Sender: remou", 
-        "Subject: jrzihb", 
-        "Context: ibzrbg"
+        "Subject: knzvfzib", 
+        "Context: mkjnzjnrg"
+      ], 
+      [
+        "Sender: remou", 
+        "Subject: rgzmjrz", 
+        "Context: jnrzmjhgr"
       ]
     ], 
     "password": "tata", 
-    "group": "user"
+    "group": "nurse"
   }, 
   "david": {
     "mail": [], 
     "password": "caca", 
-    "group": "user"
+    "group": "secretary"
   }, 
   "claire": {
     "mail": [], 
     "password": "rrrrrrr3", 
-    "group": "user"
+    "group": "doctor"
   }, 
   "jean": {
     "mail": [], 
     "password": "azert", 
-    "group": "user"
+    "group": "nurse"
   }, 
   "john": {
     "mail": [], 
     "password": "bite", 
-    "group": "user"
+    "group": "secretary"
   }, 
   "root": {
     "mail": [], 

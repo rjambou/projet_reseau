@@ -1,0 +1,15 @@
+{
+  "nurse": {
+    "fichiers": [
+      "marine"
+    ]
+  }, 
+  "secretary": {
+    "fichiers": []
+  }, 
+  "doctor": {
+    "fichiers": [
+      "marine"
+    ]
+  }
+}
