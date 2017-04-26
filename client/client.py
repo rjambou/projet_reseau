@@ -323,6 +323,7 @@ s.connect((TCP_IP, TCP_PORT))
 while 1:
     print("Welcome to the system. Please register or login.")
     while True:
+        sferm="true"
         print("Options: register | login | exit")
         option =raw_input("> ")
         if option == "login":
@@ -330,10 +331,13 @@ while 1:
         elif option == "register":
             register_client()
         elif option == "exit":
+            s.close
+            sferm="false"
             break
         else:
             print(option + " is not an option")
-
+    if sferm=="false":
+        break
 s.close()
 print("received data")
 
