@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-#-*-coding: utf8-*
-
+# coding: utf-8
 import socket
 from threading import Thread
 from SocketServer import ThreadingMixIn
@@ -10,6 +9,8 @@ import time
 import os
 import json
 import sys
+import getpass
+from os.path import expanduser
 
 
 DEFAULT_FILEPATH = 'comptes.json'
@@ -22,21 +23,17 @@ users = {
     }
 }
 
-#save account in file
-#os.chdir("/promo2019/chamonet/Insa/projetreseau/projet_reseau") #a changer en fonction de l'installation                       
-#os.chdir("/home/hamonet/Bureau/INSA/projetReseau/projet_reseau")
-
 current_dir=os.getcwd()
-os.chdir(current_dir) #a changer en fonction de l'installation    
+os.chdir(current_dir)                       
 
-def serialize_dico( dico_to_serialize, filepath):
+def serialize_dico( dico_to_serialize, filepath): #met a jour un dictionnaire
     try:
         with open(filepath, 'w') as output_file:
             output_file.write( json.dumps( dico_to_serialize, indent = 2 ) )
     except IOError:
         print "serialize_dico > Impossible d'ouvrir le fichier"
-
-def deserialize_dico( filepath ):
+    
+def deserialize_dico( filepath ): #cree un dictionnaire
     try:
         with open(filepath, 'r') as input_file:
             return json.loads( input_file.read() )
@@ -46,7 +43,8 @@ def deserialize_dico( filepath ):
 users=deserialize_dico('comptes.json')
 permissions=deserialize_dico('permissions.json')
 
-def ajout_permissions (chaine, title) :
+def ajout_permissions (chaine, title,username) : #donne les permissions ou non sur un fichier aux differentes classes
+    os.chdir("../")
     if chaine[0]=="y":
         permissions["doctor"]["fichiers"].append(title)
     if chaine[1]=="y":
@@ -54,67 +52,60 @@ def ajout_permissions (chaine, title) :
     if chaine[2]=="y":
         permissions["secretary"]["fichiers"].append(title)
     serialize_dico(permissions, 'permissions.json')
+    classe=users[username]["group"]
+    os.chdir(classe)
 
-def check_droits(classe, nom_fichier):
+def check_droits(classe, nom_fichier): #verifie si la classe "classe" a acces au fichier "nom_fichier"
     if nom_fichier in permissions[classe]["fichiers"]:
         return "true"
     else:
         return "false"
 
-def loginauth(username, password):
+def loginauth(username, password): #verifie si le mot de passe de "username" est bien "password"
     if username in users:
         if password == users[username]["password"]:
             print("Login successful")
             return True
     return False
     
-def verify(username):
+def verify(username): #verifie si "username" existe dans users
     if users.has_key(username)==True:
         return "false"
     else:
         return "true"
     
-def create(username, password):  
+def create(username, password,group): #cree un utilisateur "username" avec le mot de passe "password" appartenant au groupe "group"
     users[username] = {}
     users[username]["password"] = password
     users[username]["group"] = group
-    users[username]["mail"] = []    #a completer
+    users[username]["mail"] = []
     time.sleep(1)
     print("Account has been created")
     serialize_dico(users,'comptes.json')
 
 #arefaire
-def username_valid(recipient):
+def username_valid(recipient): #verifie si "username" existe dans users
     if users.has_key(recipient):
         return "true"
     else:
         print("There is no account with that username")
         return "false"
 
+def shell(data):                           
+    a=sub.check_output(data, shell=True)
+    if (a==''):
+        a='commande reussie'
+    return a
 
 
-
-def sendmail_server(username, recipient,subject,context):
+def sendmail_server(username, recipient,subject,context): #envoie un mail de "username" à "recipient" avec le sujet "subject" et le texte "context"
     print("Sending mail...")
     users[recipient]["mail"].append(["Sender: " + username, "Subject: " + subject, "Context: " + context])
-    serialize_dico(users,'comptes.json')
+    os.chdir("../")
+    serialize_dico(users, 'comptes.json')
+    os.chdir(users[username]["group"])
     time.sleep(1)
     print("Mail has been sent to " + recipient)
-
-def receiving(file):
-    try:
-        f=open(file,"w")
-    except IOError :
-        sub.call("touch " + file, shell=True )
-    finally:
-        l = conn.recv(1024)
-        while (l.split(" ")[0]!="fin"):
-            print "receiving"
-            f.write(l)
-            l=conn.recv(BUFFER_SIZE)
-            if (l=="fin"):
-                break
-        f.close()
 
 class ClientThread(Thread):
 
@@ -127,7 +118,7 @@ class ClientThread(Thread):
 
     def run(self):
         while True:
-            while True :
+            while True:
                 username=conn.recv(1024)
                 print username
                 if verify(username):
@@ -142,6 +133,9 @@ class ClientThread(Thread):
             #if not data: break
             commande = data.split(" ")
             print(commande)
+
+#login
+
             if (commande[0]=="login"):
                 username=commande[1]
                 password=commande[2]
@@ -151,14 +145,21 @@ class ClientThread(Thread):
                 else:
                     data="false"
                     print("login auth false")
+
+#register
+
             if (commande[0]=="register"):
                 username=commande[1]
                 password=commande[2]
+                group=commande[3]
                 if verify(username):
-                    create(username, password)
+                    create(username, password, group)
                     data="created"
                 else:
                     data="uncreated"
+
+#session
+
             if commande[0] == "session":
                 username=commande[1]
                 if users[username]["group"] == "admin":
@@ -167,11 +168,23 @@ class ClientThread(Thread):
                 else:
                     data="role: user as " + users[username]["group"]
                     conn.send(data)
+                if users[username]["group"]=="doctor":
+                    os.chdir("doctor")
+                if users[username]["group"]=="nurse":
+                    os.chdir("nurse")
+                if users[username]["group"]=="secretary":
+                    os.chdir("secretary")            
                 while True:
+
+    #logout
+
                     option=conn.recv(BUFFER_SIZE)
                     if option == "logout":
                         print(username + " logout")
                         break
+
+    #view mail
+
                     if option == "view mail":
                         print(str(len(users[username]["mail"])))
                         conn.send(str(len(users[username]["mail"])))
@@ -179,8 +192,12 @@ class ClientThread(Thread):
                         for mail in users[username]["mail"]:
                             mail=str(mail)
                             conn.send(mail)
+
+    #send mail
+
                     if option == "send mail":
                         recipient=conn.recv(BUFFER_SIZE)
+                        print("r", recipient)
                         validity=username_valid(recipient)
                         conn.send(validity)
                         time.sleep(1)
@@ -193,6 +210,9 @@ class ClientThread(Thread):
                         time.sleep(1)
                         context = conn.recv(BUFFER_SIZE)
                         sendmail_server(username,recipient,subject,context)
+
+    #commande shell
+
                     if option == "commande shell":
                         commande_shell=conn.recv(BUFFER_SIZE) #string
                         tab_commande=commande_shell.split(' ')
@@ -216,60 +236,35 @@ class ClientThread(Thread):
                         else:
                             data=shell(commande_shell)
                             conn.send(data)
-                    if option == "gestion de fichier":
-                        option_fichier = conn.recv(BUFFER_SIZE)
-                        if option_fichier=="creer un rapport":
-                            recu = ""
-                            recu = conn.recv(1024)
-                            nomFich = recu.split("NAME ")[1]
-                            nomFich = nomFich.split("OCTETS ")[0]
-                            file_access=conn.recv(BUFFER_SIZE)
-                            ajout_permissions(file_access,nomFich)
-                            taille = recu.split("OCTETS ")[1]
-                            print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
-                            taille=int(taille)
-                            num = 0
-                            while num<taille:
-                                time.sleep(1)
-                                recu = ""
-                                recu = conn.recv(1024)
-                                f = open(nomFich, "wb") 
-                                f.write(recu)                 
-                                num = num + 1024
-                            f.flush()
-                            os.fsync(f.fileno())
-                            f.close()
-                        
 
-                        elif option_fichier=="lire un rapport":
-                            nom_fichier=conn.recv(BUFFER_SIZE) #recoit le nom du rapport à lire
-                            username=conn.recv(BUFFER_SIZE) #recoit le username de l'utilisateur
-                            classe=users[username]["group"] #le serveur cherche la classe de "username" dans le dictionnaire
-                            droit=check_droits(classe, nom_fichier) #vérifie si l'utilisateur est autorisé ...
-                            conn.send(droit) # ... et envoie sa réponse au client
-                            time.sleep(1)
-                            if droit=="true":
-                                octets = os.path.getsize(nom_fichier)
-                                print(octets)
-                                conn.send("NAME " + nom_fichier + "OCTETS " + str(octets))
-                                time.sleep(1)
-                                num = 0
-                                octets = octets 
-                                fich = open(nom_fichier, "r")
-                                time.sleep(1)
-                                if octets > 1024:
-                                    for i in range(octets ):        
-                                            fich.seek(num, 0) 
-                                            donnees = fich.read(1024)    
-                                            conn.send(donnees) 
-                                            num += 1024
-                                
-                                else: 
-                                    donnees = fich.read()
-                                    conn.send(donnees)
+    #gestion de fichier
 
-                            fich.close() 
-
+                    if option == "rapport":
+                        ls=sub.check_output("ls")
+                        conn.send(str(ls))
+                        title=conn.recv(BUFFER_SIZE)
+                        time.sleep(1)
+                        file_access=conn.recv(BUFFER_SIZE)
+                        ajout_permissions(file_access,title,username)
+                        print("loading...")
+                        data=sub.check_call(["vim " + title], stdout=conn, stdin=conn, shell=True)
+                        conn.send("endVim")
+                        time.sleep(1)
+                        if users[username]["group"]=="doctor":
+                            if check_droits("nurse",title)=="true":
+                                shell("cp "+title+" ../nurse/")
+                            if check_droits("secretary",title)=="true":
+                                shell("cp "+title+" ../secretary/")
+                        if users[username]["group"]=="nurse":
+                            if check_droits("doctor",title)=="true":
+                                shell("cp "+title+" ../doctor/")
+                            if check_droits("secretary",title)=="true":
+                                shell("cp "+title+" ../secretary/")
+                        if users[username]["group"]=="doctor":
+                            if check_droits("nurse",title)=="true":
+                                shell("cp "+title+" ../nurse/")
+                            if check_droits("secretary",title)=="true":
+                                shell("cp "+title+" ../secretary/")
 
                     if users[username]["group"] == "admin":
                         if option == "user mail":
@@ -309,7 +304,9 @@ class ClientThread(Thread):
                                     if confirm == "yes":
                                         print("Deleting " + userinfo + "'s account...")
                                         del users[userinfo]
+                                        os.chdir("../")
                                         serialize_dico(users,"comptes.json")
+                                        os.chdir(users[username]["group"])
                                         time.sleep(1)
                                         conn.send(userinfo + "'s account has been deleted")
                                         break
@@ -324,19 +321,18 @@ class ClientThread(Thread):
                             else:
                                 info="false"
                                 conn.send(info)
-
             print("received data:", data)
             conn.sendall(data)
 
-def shell(data):                            #Attention commande cd
+def shell(data):                            
     a=sub.check_output(data, shell=True)
     if (a==''):
         a='commande reussie'
     return a
-    #print 'resultat', result
+
 
 TCP_IP = '0.0.0.0'
-TCP_PORT = 6266
+TCP_PORT = 6264
 BUFFER_SIZE = 1024
 
 ##prevoir un systeme de fermeture de connexion si fermeture du client (on supprime le thread)

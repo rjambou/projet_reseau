@@ -11,6 +11,8 @@ import getpass
 import graphical_claire
 import accueil
 import interface_reseau
+import signal
+from filemanagement import *
 
 current_dir=os.getcwd()
 os.chdir(current_dir) #le path change automatiquement                    
@@ -23,6 +25,37 @@ lt=True
 already_register=True
 pwd=True
 gr=True
+
+def droits(): #gere les droits d'un fichier
+    access_string=""
+    print("Can doctors access your files ? Yes(Y) or No(N) ?")
+    while True :
+        doctor_access=raw_input("> ")
+        if doctor_access.lower() in ["y","n"]:
+            access_string+=doctor_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    print("Can nurses access your files ? Yes(Y) or No(N) ?")
+    while True :
+        nurse_access=raw_input("> ")
+        if doctor_access.lower() in ["y","n"]:
+            access_string+=nurse_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+    print("Can secretaries access your files ? Yes(Y) or No(N) ?")
+    while True :
+        secretary_access=raw_input("> ")
+        if secretary_access.lower() in ["y","n"]:
+            access_string+=secretary_access.lower()
+            break
+        else:
+            print("Invalid response. Please try again.")
+            continue
+	return access_string #Exemple : "YYN"
 
 def securite(password):
     if len(password)<8:
@@ -154,31 +187,44 @@ def register_client(username, password, password2, group):
 #arefaire
 
 
-def sendmail_client(username):
+def sendmail_client(recipient, subject, context):
     while True:
-        recipient = raw_input("Recipient > ")
+    	print("function", recipient, subject, context)
+        #recipient = raw_input("Recipient > ")
         if not len(recipient) > 0:
-            print("Recipient can't be blank")
-            continue
+        	correct=False
+        	print("Recipient can't be blank")
+        	inter=interface_reseau.interface.sendm(correct)
+        	correct=True
+        	continue
         s.send(recipient)
         time.sleep(1)
         valid=s.recv(BUFFER_SIZE)
         if valid=="false":
-            print("There is no account with that username")
-            continue
+        	correct=False
+        	print("There is no account with that username")
+        	inter=interface_reseau.interface.send(correct)
+        	correct=True
+        	continue
         else:
             break
     while True:
-        subject = raw_input("Subject > ")
+        #subject = raw_input("Subject > ")
         if not len(subject) > 0:
-            print("Subject can't be blank")
-            continue
+        	correct=False
+        	print("Subject can't be blank")
+        	inter=interface_reseau.interface.send(correct)
+        	correct=True
+        	continue
         else:
             break
     while True:
-        context = raw_input("Context > ")
+        #context = raw_input("Context > ")
         if not len(context) > 0:
-            print("Context can't be blank")
+        	correct=False
+        	print("Context can't be blank")
+        	inter=interface_reseau.interface.send(correct)
+        	correct=True
         else:
             break
     print("Sending mail...")
@@ -221,7 +267,7 @@ def receiving(file):
 
 def session(username):
     current_dir=os.getcwd()
-    os.chdir(current_dir) #le path change automatiquement                        
+    os.chdir(current_dir) #le path change automatiquement                      
     data="session " + username
     s.send(data)
     time.sleep(1)
@@ -231,55 +277,46 @@ def session(username):
     while True:
         print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
         inter=interface_reseau.interface(current_dir, username)
-        print("inter", inter[0], inter[1], inter[2], inter[3])
+        print("inter", inter)
+        option_inter=inter[0]
+        option_fichier=inter[1]
+        title=inter[2]
+        recipient=inter[3]
+        subject=inter[4]
+        context=inter[5]
+        s.send(option_inter)
         if message_session.split(" ")[1] == "admin":
             print("options user mail | delete mail | delete account")
         #option = raw_input(username + " > ")
-        s.send(option)
         time.sleep(1)
-        if inter[0]==False:
+        if option_inter=="logout":
             print("Logging out...")
             break
-        elif option == "view mail":
+        elif option_inter == "view mail":
             print("Current mail:")
             nombre_mail=s.recv(BUFFER_SIZE)
             for i in range(int(nombre_mail)):
                 mail=s.recv(BUFFER_SIZE)
                 print(mail)
-        elif option == "send mail":
-            sendmail_client(username)
-        elif option == "commande shell":
+        elif option_inter == "send mail":
+            sendmail_client(recipient, subject, context)
+        elif option_inter == "commande shell":
             commande=raw_input("Please enter your commande ! ")
             s.send(commande)
             time.sleep(1)
             resultats=s.recv(BUFFER_SIZE)
             print(resultats)
-        elif inter[1] == False:
+        elif option_inter== "rapport":
             while True:
-                print("Options: creer un rapport | lire un rapport | retour")
-                option_fichier=raw_input(username + " > ")
-                s.send(option_fichier)
+                print("lire un rapport | retour")
+                #option_fichier=raw_input(username + " > ")
+                #s.send(option_fichier)
                 time.sleep(1)
-                if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
-                    title=raw_input("Enter your title of file : ")
-                    title=title+".odt"
-                    s.send(title)
-                    fichier=open(title,'w')
-                    fichier.close()
-                    data="libreoffice " + title
-                    data=shell(data)
-                    terminer=raw_input("Avez vous terminez ?(oui ou non)")
-                    while terminer!="oui":
-                        time.sleep(1)
-                    sending(title)
-
-                elif inter[2]== 2:#le fichier est chez le client ...a modifier
-                    #commande=raw_input("Please enter your filename : ")
-                    commande=inter[3]
-                    data="libreoffice " + commande + "*"
-                    data=sub.call(data, shell=True)
-                elif option_fichier=="retour":
-                    break
+                #commande=raw_input("Please enter your filename : ")
+                commande=title
+                data="libreoffice " + commande + "*"
+                data=sub.call(data, shell=True)
+                break
 
         elif message_session.split(" ")[1] == "admin":
             if option == "user mail":

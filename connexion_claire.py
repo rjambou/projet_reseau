@@ -22,8 +22,10 @@ users = {
 }
 
 #save account in file
-os.chdir("/promo2019/chamonet/Insa/projetreseau/projet_reseau") #a changer en fonction de l'installation                       
+#os.chdir("/promo2019/chamonet/Insa/projetreseau/projet_reseau") #a changer en fonction de l'installation                       
 #os.chdir("/home/hamonet/Bureau/INSA/projetReseau/projet_reseau")
+current_dir=os.getcwd()
+os.chdir(current_dir) #le path change automatiquement 
 
 def serialize_dico( dico_to_serialize, filepath = DEFAULT_FILEPATH ):
     try:
