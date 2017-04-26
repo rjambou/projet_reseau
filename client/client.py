@@ -241,8 +241,11 @@ def session(username):
                 print(ls)
                 title=raw_input("fileName: ")
                 s.send(title)
-                file_access=droits()
-                s.send(file_access)
+                time.sleep(1)
+                test=s.recv(BUFFER_SIZE)
+                if test=="false":
+                    file_access=droits()
+                    s.send(file_access)
                 time.sleep(1)
                 s.settimeout(None)
                 connemission = Emission(s)

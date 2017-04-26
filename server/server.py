@@ -91,11 +91,15 @@ def username_valid(recipient): #verifie si "username" existe dans users
         print("There is no account with that username")
         return "false"
 
-def shell(data):                           
-    a=sub.check_output(data, shell=True)
-    if (a==''):
-        a='commande reussie'
-    return a
+def shell(data):
+    try:
+        a=sub.check_output(data, shell=True)
+    except sub.CalledProcessError as e:
+        a="command failed"
+    finally:
+        if (a==''):
+            a='command succed'                           
+        return a
 
 
 def sendmail_server(username, recipient,subject,context): #envoie un mail de "username" à "recipient" avec le sujet "subject" et le texte "context"
@@ -243,12 +247,24 @@ class ClientThread(Thread):
                         conn.send(str(ls))
                         title=conn.recv(BUFFER_SIZE)
                         time.sleep(1)
-                        file_access=conn.recv(BUFFER_SIZE)
-                        ajout_permissions(file_access,title,username)
-                        print("loading...")
-                        data=sub.check_call(["vim " + title], stdout=conn, stdin=conn, shell=True)
-                        conn.send("endVim")
-                        time.sleep(1)
+                        test="false"
+                        for i in permissions:
+                            for j in permissions[i].values():
+                                if title in j:
+                                    test="true"
+                        if test=="true":
+                            conn.send("true")
+                            data=sub.check_call(["vim " + title], stdout=conn, stdin=conn, shell=True)
+                            conn.send("endVim")
+                            time.sleep(1)
+                        else:
+                            conn.send("false")
+                            file_access=conn.recv(BUFFER_SIZE)
+                            ajout_permissions(file_access,title,username)
+                            print("loading...")
+                            data=sub.check_call(["vim " + title], stdout=conn, stdin=conn, shell=True)
+                            conn.send("endVim")
+                            time.sleep(1)
                         if users[username]["group"]=="doctor":
                             if check_droits("nurse",title)=="true":
                                 shell("cp "+title+" ../nurse/")
@@ -322,13 +338,6 @@ class ClientThread(Thread):
                                 conn.send(info)
             print("received data:", data)
             conn.sendall(data)
-
-def shell(data):                            
-    a=sub.check_output(data, shell=True)
-    if (a==''):
-        a='commande reussie'
-    return a
-
 
 TCP_IP = '0.0.0.0'
 TCP_PORT = 6264

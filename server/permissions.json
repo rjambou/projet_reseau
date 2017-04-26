@@ -1,23 +1,11 @@
 {
   "nurse": {
-    "fichiers": [
-      "claire", 
-      "jean", 
-      "polo"
-    ]
+    "fichiers": []
   }, 
   "doctor": {
-    "fichiers": [
-      "claire", 
-      "jean", 
-      "gorille", 
-      "polo"
-    ]
+    "fichiers": []
   }, 
   "secretary": {
-    "fichiers": [
-      "gorille", 
-      "polo"
-    ]
+    "fichiers": []
   }
 }
