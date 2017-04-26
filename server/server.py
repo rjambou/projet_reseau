@@ -239,6 +239,8 @@ class ClientThread(Thread):
     #gestion de fichier
 
                     if option == "rapport":
+                        ls=sub.check_output("ls")
+                        conn.send(str(ls))
                         title=conn.recv(BUFFER_SIZE)
                         time.sleep(1)
                         file_access=conn.recv(BUFFER_SIZE)

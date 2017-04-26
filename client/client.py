@@ -237,6 +237,8 @@ def session(username):
 
         elif option == "rapport":
             while True:
+                ls=s.recv(BUFFER_SIZE)
+                print(ls)
                 title=raw_input("fileName: ")
                 s.send(title)
                 file_access=droits()
