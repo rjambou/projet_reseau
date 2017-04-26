@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*-coding: utf8-*
+# coding: utf-8
 import subprocess as sub
 import commands as cmd
 import socket
@@ -9,6 +9,8 @@ import json
 import sys
 import getpass
 import signal
+from filemanagement import *
+
 
 current_dir=os.getcwd()
 os.chdir(current_dir) #le path change automatiquement                    
@@ -182,38 +184,13 @@ def shell(data):
         a='commande reussie'
     return a
 
-def sending(file):
-    f=open(file,"r")
-    l = f.read(1024)
-    size=os.path.getsize(file)
-    while (l):
-        print 'Sending...'
-        s.send(l)
-        l = f.read(1024)   
-    f.close()
-    s.send("fin")
-    print "Done Sending"
-    
-'''
-def receiving(file):
-    try:
-        f=open(file,"w")
-    except IOError :
-        sub.call("touch " + file, shell=True )
-    finally:
-        l = s.recv(1024)
-        while(l):
-            print "receiving"
-            f.write(l)
-            l=s.recv(BUFFER_SIZE)
-        f.close()
 
-'''
 
 
 def session(username):
     current_dir=os.getcwd()
     os.chdir(current_dir) #le path change automatiquement                        
+    shell("cd ../client")
     data="session " + username
     s.send(data)
     time.sleep(1)
@@ -221,7 +198,7 @@ def session(username):
     message_session=s.recv(BUFFER_SIZE)
     print(message_session)
     while True:
-        print("Options: view mail | send mail | commande shell | gestion de fichier | logout")
+        print("Options: view mail | send mail | commande shell | rapport | logout")
         option = raw_input(username + " > ")
         s.send(option)
         time.sleep(1)
@@ -250,102 +227,32 @@ def session(username):
 #commande shell
 
         elif option == "commande shell":
-        	commande=raw_input("Please enter your commande ! ")
-        	s.send(commande)
-        	time.sleep(1)
-        	resultats=s.recv(BUFFER_SIZE)
-        	print(resultats)
+            commande=raw_input("Please enter your commande ! ")
+            s.send(commande)
+            time.sleep(1)
+            resultats=s.recv(BUFFER_SIZE)
+            print(resultats)
 
 #gestion de fichier
 
-        elif option == "gestion de fichier":
+        elif option == "rapport":
             while True:
-                print("Options: creer un rapport | lire un rapport | retour")
-                option_fichier=raw_input(username + " > ")
-                s.send(option_fichier)
+                title=raw_input("fileName: ")
+                s.send(title)
+                file_access=droits()
+                s.send(file_access)
                 time.sleep(1)
+                s.settimeout(None)
+                connemission = Emission(s)
+                connrecep = Reception(s, connemission)
 
-    #creer un rapport 
+                connemission.start()
+                connrecep.start()
 
-                if option_fichier=="creer un rapport":#le fichier est enregister chez le client......a modifier
-                    title=raw_input("Enter your title of file : ")
-                    time.sleep(1)
-                    fichier=open(title,'w')
-                    fichier.close()
-                    data="libreoffice " + title
-                    data=shell(data)
-                    terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
-                    while terminer!="Y":
-                        time.sleep(1)
-                        terminer=raw_input("Are you finished ? (Yes(Y) or No(N))")
-                    time.sleep(2)
-                    octets = os.path.getsize(title)
-                    print(octets)
-                    s.send("NAME " + title + "OCTETS " + str(octets))
-                    file_access=droits()
-                    s.send(file_access)
-                    time.sleep(1)
-                    num = 0
-                    octets = octets 
-                    fich = open(title, "r")
-                    time.sleep(1)
-                    if octets > 1024:
-                        for i in range(octets ):        
-                                fich.seek(num, 0) 
-                                donnees = fich.read(1024)    
-                                s.send(donnees) 
-                                num += 1024
-                    
-                    else: 
-                        donnees = fich.read()
-                        s.send(donnees)
-
-                    fich.close() 
-                    shell("rm " + title)
-                    break
-
-    #lire un rapport
-
-                elif option_fichier=="lire un rapport":
-                    nom_fichier=raw_input("Please enter your filename : ")
-                    s.send(nom_fichier) #envoie au serveur pour savoir si l'utilisateur a les droits
-                    time.sleep(1)
-                    s.send(username) #envoie le username au serveur (qui vérifie la classe) pour savoir si l'utilisateur a les droits
-                    time.sleep(1) 
-                    droit=s.recv(BUFFER_SIZE) #recoit la réponse du serveur pour les droits
-                    time.sleep(1)
-                    if droit=="true":
-                        recu = ""
-                        recu = s.recv(1024)
-                        nomFich = recu.split("NAME ")[1]
-                        nomFich = nomFich.split("OCTETS ")[0]
-                        taille = recu.split("OCTETS ")[1]
-                        print " >> Fichier '" + nomFich + "' [" + taille + " Ko]"
-                        taille=int(taille)
-                        num = 0
-                        while num<taille:
-                            time.sleep(1)
-                            recu = ""
-                            recu = s.recv(1024)
-                            f = open(nomFich, "wb") 
-                            f.write(recu)                 
-                            num = num + 1024
-                        f.flush()
-                        os.fsync(f.fileno())
-                        f.close()
-                        data="libreoffice " + nom_fichier + "*"
-                        data=sub.call(data, shell=True)
-                    else:
-                        print("Vous n'avez pas le droit de lire ce fichier.")
-                    shell("rm " + nomFich)
-                    break
-
-    #retour
-
-                elif option_fichier=="retour":
-                    break
-                else:
-                    print("This is not an option.")
+                connemission.join()
+                connrecep.join()
+                
+                break
 
         elif message_session.split(" ")[1] == "admin":
             if option == "user mail":

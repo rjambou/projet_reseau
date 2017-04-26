@@ -15,6 +15,11 @@
         "Sender: yanis", 
         "Subject: coucou", 
         "Context: salut c'est moi yanis et ceci est un test"
+      ], 
+      [
+        "Sender: jean", 
+        "Subject: essaie", 
+        "Context: poiuytfrghjkljhgfdxcvbnjvfcdsfghjkhgfdfguik"
       ]
     ], 
     "password": "jeansavol1234", 
@@ -31,6 +36,11 @@
         "Sender: jean", 
         "Subject: rebonjour", 
         "Context: poiuytredfghjk"
+      ], 
+      [
+        "Sender: jean", 
+        "Subject: recoucou", 
+        "Context: poiuytresdfghjkljhgvcvbn,nbvcxwsdfgthyj"
       ]
     ], 
     "password": "abdoul12", 
