@@ -329,3 +329,4 @@ def shell(data):
     if (a==''):
         a='commande reussie'
     return a
+    

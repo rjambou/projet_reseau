@@ -51,3 +51,4 @@ class Emission(threading.Thread):
 	def Stop(self):
 		self.edition=False
 		print("stop edition")
+
