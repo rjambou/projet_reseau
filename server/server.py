@@ -243,7 +243,9 @@ class ClientThread(Thread):
     #gestion de fichier
 
                     if option == "rapport":
-                        ls=sub.check_output("ls")
+                        ls=sub.check_output("ls", shell=True)
+                        if ls=='':
+                            ls="None Document"
                         conn.send(str(ls))
                         title=conn.recv(BUFFER_SIZE)
                         time.sleep(1)
@@ -254,9 +256,14 @@ class ClientThread(Thread):
                                     test="true"
                         if test=="true":
                             conn.send("true")
-                            data=sub.check_call(["vim " + title], stdout=conn, stdin=conn, shell=True)
-                            conn.send("endVim")
-                            time.sleep(1)
+                            testd=check_droits(users[username]["group"],title)
+                            if testd=="true":
+                                conn.send("trued")
+                                data=sub.check_call(["vim " + title], stdout=conn, stdin=conn, shell=True)
+                                conn.send("endVim")
+                                time.sleep(1)
+                            else:
+                                conn.send("falsed")
                         else:
                             conn.send("false")
                             file_access=conn.recv(BUFFER_SIZE)

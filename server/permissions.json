@@ -2,10 +2,10 @@
   "nurse": {
     "fichiers": []
   }, 
-  "doctor": {
+  "secretary": {
     "fichiers": []
   }, 
-  "secretary": {
+  "doctor": {
     "fichiers": []
   }
 }
